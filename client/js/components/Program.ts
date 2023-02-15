@@ -3,18 +3,18 @@ import Scene from '../lib/Scene';
 import SceneContainer from './SceneContainer';
 import App from '../lib/App';
 
-interface SceneContainerAttrs {
+interface ProgramAttrs {
     app: App
 }
 
-export default class Program implements m.ClassComponent<SceneContainerAttrs> {
+export default class Program implements m.ClassComponent<ProgramAttrs> {
     scene: Scene
 
-    oninit(vnode: m.Vnode<SceneContainerAttrs, this>) {
+    oninit(vnode: m.Vnode<ProgramAttrs, this>) {
         vnode.attrs.app.changeQuality('original');
     }
 
-    view(vnode: m.VnodeDOM<SceneContainerAttrs, this>) {
+    view(vnode: m.VnodeDOM<ProgramAttrs, this>) {
         const camera = vnode.attrs.app.cameras[m.route.param('camera')];
 
         if (!camera) {

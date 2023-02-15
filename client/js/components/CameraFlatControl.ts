@@ -42,6 +42,7 @@ export default class CameraFlatControl implements m.ClassComponent<CameraFlatCon
     view(vnode: m.VnodeDOM<CameraFlatControlAttrs, this>) {
         return m('.CameraFlatControl', m('canvas', {
             onmousemove: (event: MouseEvent) => {
+                // @ts-ignore
                 event.redraw = false;
                 this.mousePosition = {
                     ...this.mousePositionToCameraOrientation(event),
@@ -49,10 +50,12 @@ export default class CameraFlatControl implements m.ClassComponent<CameraFlatCon
                 };
             },
             onmouseleave: (event: MouseEvent) => {
+                // @ts-ignore
                 event.redraw = false;
                 this.mousePosition = null;
             },
             onclick: (event: MouseEvent) => {
+                // @ts-ignore
                 event.redraw = false;
                 const position = this.mousePositionToCameraOrientation(event);
 
