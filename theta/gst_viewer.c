@@ -56,7 +56,7 @@ gst_src_init(int *argc, char ***argv, char *pipeline)
     GstBus *bus;
     char pipeline_str[MAX_PIPELINE_LEN];
 
-    snprintf(pipeline_str, MAX_PIPELINE_LEN, "appsrc name=ap ! queue ! h264parse ! queue ! %s ", pipeline);
+    snprintf(pipeline_str, MAX_PIPELINE_LEN, "appsrc name=ap ! queue ! h264parse ! queue ! %s", pipeline);
 
     gst_init(argc, argv);
     src.timer = g_timer_new();
@@ -142,14 +142,14 @@ main(int argc, char **argv)
 
     struct gst_src *s;
     int idx;
-    char *pipe_proc;
+    char pipe_proc[MAX_PIPELINE_LEN];
 
     if (argc < 2) {
         fprintf(stderr, "Must pass pipeline as first parameter");
         return -1;
     }
 
-    snprintf(pipe_proc, MAX_PIPELINE_LEN, " decodebin%s", argv[0]);
+    snprintf(pipe_proc, MAX_PIPELINE_LEN, "decodebin %s", argv[1]);
 
     if (!gst_src_init(&argc, &argv, pipe_proc)) {
         return -1;
@@ -161,7 +161,9 @@ main(int argc, char **argv)
         return res;
     }
 
-    if (argc > 1 && strcmp("-l", argv[2]) == 0) {
+    // The -l feature has been preserved from the example code
+    // When passing -l as the first parameter it will also be read as the pipeline but the pipeline will never be launched
+    if (strcmp("-l", argv[1]) == 0) {
         res = thetauvc_find_devices(ctx, &devlist);
         if (res != UVC_SUCCESS) {
             uvc_perror(res,"");
