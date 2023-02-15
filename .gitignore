@@ -1,0 +1,7 @@
+node_modules
+client-dist
+pipes
+server/config.json
+theta/gst_viewer
+theta/gst_viewer.o
+theta/thetauvc.o

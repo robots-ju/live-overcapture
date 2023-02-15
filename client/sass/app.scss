@@ -1,0 +1,36 @@
+@import "~@fortawesome/fontawesome-free/scss/fontawesome";
+@import "~@fortawesome/fontawesome-free/scss/solid";
+
+html, body {
+    margin: 0;
+}
+
+.SceneContainer {
+    position: relative;
+}
+
+.SceneDry {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    text-align: center;
+    font-size: 50px;
+
+    display: none;
+
+    &.is-dry {
+        display: block;
+    }
+}
+
+.CameraFlatControl {
+    cursor: crosshair;
+}
+
+.CameraControl {
+    display: flex;
+}

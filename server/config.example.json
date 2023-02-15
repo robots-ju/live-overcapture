@@ -1,0 +1,53 @@
+{
+    "websocket": {
+        "port": 8890
+    },
+    "pipe-prefix": "/home/ubuntu/Videos/pipes",
+    "devices": [
+        {
+            "key": "first",
+            "type": "playback",
+            "width": 3840,
+            "height": 1920,
+            "uri": "file:///home/ubuntu/Videos/360video.mp4",
+            "cameras": [
+                {
+                    "key": "a",
+                    "ratio": 1,
+                    "pitch": 0,
+                    "yaw": 0,
+                    "fov": 75
+                },
+                {
+                    "key": "b",
+                    "ratio": 1,
+                    "pitch": 0,
+                    "yaw": 180,
+                    "fov": 75
+                }
+            ]
+        },
+        {
+            "key": "second",
+            "type": "theta",
+            "width": 3840,
+            "height": 1920,
+            "cameras": [
+                {
+                    "key": "c",
+                    "ratio": 1,
+                    "pitch": 0,
+                    "yaw": 0,
+                    "fov": 75
+                },
+                {
+                    "key": "d",
+                    "ratio": 1,
+                    "pitch": 0,
+                    "yaw": 180,
+                    "fov": 75
+                }
+            ]
+        }
+    ]
+}
