@@ -34,3 +34,20 @@ html, body {
 .CameraControl {
     display: flex;
 }
+
+#debug {
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    padding: 24px;
+    position: fixed;
+    top: 0;
+    right: 0;
+    min-width: 180px;
+    white-space: pre;
+    text-align: right;
+    display: none;
+
+    &.visible {
+        display: block;
+    }
+}

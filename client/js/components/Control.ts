@@ -26,6 +26,11 @@ export default class Control implements m.ClassComponent<ControlAttrs> {
                 }),
                 ' Preview in original quality',
             ])),
+            m('button', {
+                onclick: () => {
+                    app.toggleDebug();
+                },
+            }, 'Toggle debug'),
             m('h2', 'Devices'),
             deviceKeys.length ? m('ul', deviceKeys.map(key => {
                 const device = app.devices[key];

@@ -13,6 +13,7 @@ export default class App {
     state: AppState = {
         debug: false
     }
+    debugStartTime: number = 0
 
     constructor() {
         const imageUrl = m.parseQueryString(window.location.search).testImage;
@@ -95,7 +96,7 @@ export default class App {
 
     sendCameraOrientation(cameraKey: string, orientation: CameraOrientation, animate: boolean = false) {
         if (!this.socket) {
-            console.log('Cannot send camera orientation, socket not available');
+            console.warn('Cannot send camera orientation, socket not available');
         }
 
         this.socket.emit(animate ? 'animate-camera' : 'fix-camera', {
@@ -159,6 +160,68 @@ export default class App {
     }
 
     pushState(state: AppState) {
+        if (state.debug !== this.state.debug) {
+            Object.values(this.devices).forEach(device => {
+                device.canvas.debug = state.debug ? {
+                    websocketFrameCount: 0,
+                    websocketTotalBytes: 0,
+                    queueDroppedFrameCount: 0,
+                    decodeFrameCount: 0,
+                    decodeFailCount: 0,
+                    decodeTotalTime: 0,
+                } : null;
+            });
+
+            document.getElementById('debug').classList.toggle('visible', state.debug);
+        }
+
         this.state = state;
+
+        // Must be started after the state is updated since it's the exit condition for the animaze loop
+        if (state.debug) {
+            this.debugStartTime = (new Date()).getTime();
+            this.animateDebug();
+        }
+    }
+
+    toggleDebug() {
+        this.socket.emit('debug', !this.state.debug);
+    }
+
+    animateDebug() {
+        if (!this.state.debug) {
+            return;
+        }
+
+        let content = '';
+
+        const elapsedTime = (new Date()).getTime() - this.debugStartTime;
+
+        Object.keys(this.devices).forEach(deviceKey => {
+            const device = this.devices[deviceKey];
+
+            const {debug} = device.canvas;
+
+            if (!debug) {
+                return;
+            }
+
+            const bytesPerFrame = debug.websocketTotalBytes / (debug.websocketFrameCount || 1);
+            const decodeTimePerFrame = debug.decodeTotalTime / (debug.decodeFrameCount || 1);
+
+            content += 'Device ' + deviceKey + '\n';
+            content += debug.websocketFrameCount + ' WS frames\n';
+            content += (Math.round(bytesPerFrame / 100000) / 10) + ' MB/frame AVG\n';
+            content += Math.round(debug.websocketFrameCount / elapsedTime * 1000) + ' WS frames/s AVG\n';
+            content += debug.queueDroppedFrameCount + ' dropped frames\n';
+            content += debug.decodeFrameCount + ' decoded frames\n';
+            content += debug.decodeFailCount + ' broken frames\n';
+            content += Math.round(decodeTimePerFrame) + ' ms/decode\n';
+            content += Math.round(debug.decodeFrameCount / elapsedTime * 1000) + ' decoded frames/s AVG\n';
+        });
+
+        document.getElementById('debug').textContent = content;
+
+        window.requestAnimationFrame(this.animateDebug.bind(this));
     }
 }

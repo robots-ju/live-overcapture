@@ -16,7 +16,7 @@ if (!/^https?:\/\//.test(uri)) {
 const app = new App();
 app.connect(uri);
 
-m.route(document.getElementById('js-app'), '/control', {
+m.route(document.getElementById('app'), '/control', {
     '/control': {
         view() {
             return m(Control, {
