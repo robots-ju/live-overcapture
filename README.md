@@ -58,6 +58,17 @@ cd live-overcapture/server
 node server.js
 ```
 
+## Miscellaneous
+
+To quickly check the battery level or serial number of the Theta, switch out of streaming mode and run:
+
+```sh
+sudo apt install mtp-tools
+mtp-detect | grep "   Model:\|   Device version:\|   Serial number:\|   Battery level"
+```
+
+MTP communication seems to unfortunately not be available when in streaming mode.
+
 ## License
 
 Code in the `theta` folder is licensed under the BSD license.
