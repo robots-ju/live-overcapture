@@ -2,11 +2,16 @@ const fs = require('fs');
 const net = require('net');
 const {spawn} = require('child_process');
 
+const STATS_INTERVAL_SECONDS = 10;
+
 module.exports = class Pipe {
     constructor(path) {
         this.path = path;
         this.buffers = [];
         this.websocketClients = [];
+        this.frameNumber = 0;
+        this.time = null;
+        this.framesInStatsInterval = 0;
 
         this.init();
     }
@@ -27,6 +32,11 @@ module.exports = class Pipe {
                 }
             });
         }
+
+        setInterval(() => {
+            console.log('[' + (new Date()).toString() + '] Pipe ' + this.path + ' stats: ' + (Math.round(this.framesInStatsInterval / STATS_INTERVAL_SECONDS * 10) / 10) + 'frames/s');
+            this.framesInStatsInterval = 0;
+        }, STATS_INTERVAL_SECONDS * 1000);
     }
 
     connect() {
@@ -37,6 +47,11 @@ module.exports = class Pipe {
 
             pipe.on('data', (data) => {
                 this.buffers.push(data);
+
+                // Copy time as early as possible, so it references the time the frame started coming in
+                if (!this.time) {
+                    this.time = (new Date()).getTime();
+                }
 
                 // Nothing fancy, we can detect the change from one image to another because the last packet will not have the same size
                 if (data.length !== 65536) {
@@ -55,6 +70,9 @@ module.exports = class Pipe {
     }
 
     sendFrame() {
+        const time = this.time;
+        this.time = null;
+
         if (!this.buffers.length) {
             console.log('no frame to send');
             return;
@@ -62,8 +80,16 @@ module.exports = class Pipe {
 
         const completeFrame = Buffer.concat(this.buffers);
 
+        this.frameNumber++;
+        this.framesInStatsInterval++;
+
         this.websocketClients.forEach(socket => {
-            socket.emit('frame', completeFrame);
+            socket.emit('frame', {
+                number: this.frameNumber,
+                time,
+                // Passing binary inside a JSON block should be fine, Socket.io will automatically extract buffers to binary attachments
+                jpeg: completeFrame,
+            });
         });
 
         this.buffers = [];

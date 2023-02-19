@@ -3,10 +3,16 @@ import * as m from 'mithril';
 interface CanvasDebug {
     websocketFrameCount: number
     websocketTotalBytes: number
+    decoderDroppedFrameCount: number
     queueDroppedFrameCount: number
     decodeFrameCount: number
     decodeFailCount: number
     decodeTotalTime: number
+    generationToDecodeTotalTime: number
+    generationToDecodeMaxTime: number
+    framesNotDecodedInTimeCount: number
+    drawnFrameCount: number
+    drawnDroppedFrameCount: number
 }
 
 export interface CanvasVideoInterface {
@@ -19,91 +25,170 @@ export interface CanvasVideoInterface {
     offNeedsTextureUpdate(callback: () => void)
 }
 
+interface QueueEntry {
+    number: number
+    time: number
+    url?: string
+    image?: HTMLImageElement
+    ready: boolean
+}
+
+const DELAY_MS = 500;
+const MAX_DECODES = 20;
+const MAX_QUEUE_LENGTH = 30;
+
 export default class CanvasVideo implements CanvasVideoInterface {
     canvas: HTMLCanvasElement
     context: CanvasRenderingContext2D
-    queue: ArrayBuffer | null = null
+    queue: QueueEntry[] = []
     lastFrameTime: Date | null = null
+    lastReceivedFrameNumber: number = -1
     textureUpdateListeners: (() => void)[] = []
     isDry: boolean = false
     debug: CanvasDebug | null = null
+    framesBeingDecodedCount: number = 0
 
     constructor(width: number, height: number) {
         this.canvas = document.createElement('canvas');
         this.canvas.width = width;
         this.canvas.height = height;
-        this.context = this.canvas.getContext('2d');
+        this.context = this.canvas.getContext('2d', {
+            // I don't see much of an improvement with those attributes, but they are supposed to speed things up
+            alpha: false,
+            desynchronized: true,
+            // willReadFrequently doesn't help because then it's THREE.js that clogs the browser when it copies from our RAM canvas to its GPU texture
+        });
 
         this.animate();
     }
 
-    pushFrame(data: ArrayBuffer, quality: 'original' | 'low') {
+    pushFrame(data: { number: number, time: number, jpeg: ArrayBuffer }, quality: 'original' | 'low') {
         if (this.debug) {
             this.debug.websocketFrameCount++;
-            this.debug.websocketTotalBytes += data.byteLength;
+            this.debug.websocketTotalBytes += data.jpeg.byteLength;
         }
 
-        if (this.queue) {
-            console.log('dropped frame');
+        this.lastFrameTime = new Date();
+        this.lastReceivedFrameNumber = data.number;
+
+        if (this.framesBeingDecodedCount > MAX_DECODES) {
+            if (this.debug) {
+                this.debug.decoderDroppedFrameCount++;
+            }
+
+            return;
+        }
+
+        this.framesBeingDecodedCount++;
+
+        let startTime: Date;
+
+        if (this.debug) {
+            this.debug.decodeFrameCount += 1;
+            startTime = new Date();
+        }
+
+        let url: string;
+        const img = new Image();
+        img.onload = () => {
+            entry.ready = true;
+
+            URL.revokeObjectURL(url);
+
+            if (this.debug) {
+                const endTime = (new Date()).getTime()
+                const decodeTime = endTime - startTime.getTime();
+                const timeFromGeneration = endTime - data.time;
+
+                this.debug.decodeTotalTime += decodeTime;
+                this.debug.generationToDecodeTotalTime += timeFromGeneration;
+
+                if (timeFromGeneration > this.debug.generationToDecodeMaxTime) {
+                    this.debug.generationToDecodeMaxTime = timeFromGeneration;
+                }
+            }
+
+            this.framesBeingDecodedCount--;
+        };
+        img.onerror = () => {
+            URL.revokeObjectURL(url);
+
+            if (this.debug) {
+                this.debug.decodeFailCount += 1;
+                // TODO: also calculate execution time for errors? It's unlikely to happen
+            }
+
+            this.framesBeingDecodedCount--;
+        }
+
+        if (this.queue.length > MAX_QUEUE_LENGTH) {
+            this.queue.shift();
 
             if (this.debug) {
                 this.debug.queueDroppedFrameCount++;
             }
-
-            // Replace existing frame in queue to minimize latency
         }
 
-        this.queue = data;
-        this.lastFrameTime = new Date();
+        const blob = new Blob([data.jpeg], {type: 'application/octet-binary'});
+        url = URL.createObjectURL(blob);
+
+        const entry: QueueEntry = {
+            number: data.number,
+            time: data.time,
+            url,
+            image: img,
+            ready: false,
+        };
+
+        this.queue.push(entry);
+
+        img.src = url;
     }
 
     animate() {
-        if (this.queue) {
+        if (this.queue.length > 0) {
             if (this.isDry) {
                 this.isDry = false;
                 m.redraw();
             }
 
-            let startTime: Date;
+            const drawingTime = (new Date()).getTime() - DELAY_MS;
 
-            if (this.debug) {
-                this.debug.decodeFrameCount += 1;
-                startTime = new Date();
+            let frame: QueueEntry | null = null;
+
+            while (this.queue.length > 0 && this.queue[0].time <= drawingTime) {
+                const passedFrame = this.queue.shift();
+
+                if (!passedFrame.ready) {
+                    // Revoke as soon as possible to free up RAM
+                    if (passedFrame.url) {
+                        URL.revokeObjectURL(passedFrame.url);
+                    }
+
+                    if (this.debug) {
+                        this.debug.framesNotDecodedInTimeCount++;
+                    }
+
+                    continue;
+                }
+
+                if (frame && this.debug) {
+                    this.debug.drawnDroppedFrameCount++;
+                }
+
+                frame = passedFrame;
             }
 
-            const blob = new Blob([this.queue], {type: 'application/octet-binary'});
-            const url = URL.createObjectURL(blob);
-            const img = new Image;
-            img.onload = () => {
-                URL.revokeObjectURL(url);
-                // When running in low quality, the image will be stretched here
-                // This makes implementation in other classes easier if size remains the same
-                this.context.drawImage(img, 0, 0, this.canvas.width, this.canvas.height);
+            if (frame) {
+                //this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.context.drawImage(frame.image, 0, 0, this.canvas.width, this.canvas.height);
+
                 this.textureUpdateListeners.forEach(callback => callback());
-                this.queue = null;
 
                 if (this.debug) {
-                    const decodeTime = (new Date).getTime() - startTime.getTime();
-
-                    this.debug.decodeTotalTime += decodeTime;
+                    this.debug.drawnFrameCount++;
                 }
-
-                this.animate();
-            };
-            img.onerror = () => {
-                this.queue = null;
-
-                if (this.debug) {
-                    this.debug.decodeFailCount += 1;
-                    // TODO: also calculate execution time for errors? It's unlikely to happen
-                }
-
-                this.animate();
             }
-            img.src = url;
-
-            // Animation will continue in callback
-            return;
         } else if (!this.isDry && (!this.lastFrameTime || ((new Date()).getTime() - this.lastFrameTime.getTime()) > 5000)) {
             this.isDry = true;
             m.redraw();

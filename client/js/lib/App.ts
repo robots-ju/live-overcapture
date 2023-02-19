@@ -165,10 +165,16 @@ export default class App {
                 device.canvas.debug = state.debug ? {
                     websocketFrameCount: 0,
                     websocketTotalBytes: 0,
+                    decoderDroppedFrameCount: 0,
                     queueDroppedFrameCount: 0,
                     decodeFrameCount: 0,
                     decodeFailCount: 0,
                     decodeTotalTime: 0,
+                    generationToDecodeTotalTime: 0,
+                    generationToDecodeMaxTime: 0,
+                    framesNotDecodedInTimeCount: 0,
+                    drawnFrameCount: 0,
+                    drawnDroppedFrameCount: 0,
                 } : null;
             });
 
@@ -208,16 +214,24 @@ export default class App {
 
             const bytesPerFrame = debug.websocketTotalBytes / (debug.websocketFrameCount || 1);
             const decodeTimePerFrame = debug.decodeTotalTime / (debug.decodeFrameCount || 1);
+            const genToDecodeTimePerFrame = debug.generationToDecodeTotalTime / (debug.decodeFrameCount || 1);
 
             content += 'Device ' + deviceKey + '\n';
             content += debug.websocketFrameCount + ' WS frames\n';
             content += (Math.round(bytesPerFrame / 100000) / 10) + ' MB/frame AVG\n';
             content += Math.round(debug.websocketFrameCount / elapsedTime * 1000) + ' WS frames/s AVG\n';
-            content += debug.queueDroppedFrameCount + ' dropped frames\n';
+            content += debug.decoderDroppedFrameCount + ' decoder dropped frames\n';
+            content += debug.queueDroppedFrameCount + ' queue dropped frames\n';
             content += debug.decodeFrameCount + ' decoded frames\n';
             content += debug.decodeFailCount + ' broken frames\n';
-            content += Math.round(decodeTimePerFrame) + ' ms/decode\n';
+            content += Math.round(decodeTimePerFrame) + ' ms decode AVG\n';
+            content += Math.round(genToDecodeTimePerFrame) + ' ms generation to ready AVG\n';
+            content += debug.generationToDecodeMaxTime + ' ms generation to ready MAX\n';
             content += Math.round(debug.decodeFrameCount / elapsedTime * 1000) + ' decoded frames/s AVG\n';
+            content += Math.round(debug.drawnFrameCount / elapsedTime * 1000) + ' drawn frames/s AVG\n';
+            content += debug.framesNotDecodedInTimeCount + ' skipped frames (too slow)\n';
+            content += debug.drawnDroppedFrameCount + ' skipped frames (too fast)\n';
+            content += device.canvas.queue.length + ' queue length\n';
         });
 
         document.getElementById('debug').textContent = content;
