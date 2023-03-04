@@ -21,6 +21,9 @@ export default class Camera3DControl implements m.ClassComponent<Camera3DControl
 
         return m('.Camera3DControl', {
             onmousedown: (event: MouseEvent) => {
+                event.preventDefault();
+                event.redraw = false;
+
                 this.dragActive = {
                     x: event.clientX,
                     y: event.clientY,
@@ -40,9 +43,11 @@ export default class Camera3DControl implements m.ClassComponent<Camera3DControl
                 return;
             }
 
+            event.preventDefault();
+
             vnode.attrs.app.sendCameraOrientation(vnode.attrs.camera.key, {
-                pitch: (this.dragActive.y - event.clientY) * DEGREES_PER_PIXEL_MOVED + this.dragActive.orientation.pitch,
-                yaw: (this.dragActive.x - event.clientX) * DEGREES_PER_PIXEL_MOVED + this.dragActive.orientation.yaw,
+                pitch: Math.max(Math.min((this.dragActive.y - event.clientY) * DEGREES_PER_PIXEL_MOVED * -1 + this.dragActive.orientation.pitch, 90), -90),
+                yaw: ((this.dragActive.x - event.clientX) * DEGREES_PER_PIXEL_MOVED + this.dragActive.orientation.yaw + 180) % 360 - 180,
                 fov: this.dragActive.orientation.fov,
             }, false);
         };
