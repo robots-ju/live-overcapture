@@ -46,6 +46,7 @@ export default class App {
 
             config.devices.forEach(deviceConfig => {
                 const device = new Device(deviceConfig);
+                device.canvas.initWorker(uri, deviceConfig.key);
                 this.devices[deviceConfig.key] = device;
 
                 deviceConfig.cameras.forEach(cameraConfig => {
@@ -69,14 +70,6 @@ export default class App {
             }
 
             device.pushState(data.state);
-        });
-
-        this.socket.on('frame', data => {
-            const keys = Object.keys(this.devices);
-            // TODO: support multiple devices
-            if (keys.length) {
-                this.devices[keys[0]].canvas.pushFrame(data, this.quality);
-            }
         });
 
         this.socket.on('camera-position', data => {
@@ -113,14 +106,8 @@ export default class App {
             const device = this.devices[deviceKey];
 
             if (device.enabled) {
-                this.socket.emit('stop-stream', {
-                    device: deviceKey,
-                    quality: oldQuality,
-                });
-                this.socket.emit('start-stream', {
-                    device: deviceKey,
-                    quality,
-                });
+                device.canvas.enableWorker(false, oldQuality);
+                device.canvas.enableWorker(true, quality);
             }
         });
     }
@@ -144,17 +131,7 @@ export default class App {
             if (enabled !== device.enabled) {
                 device.enabled = enabled;
 
-                if (enabled) {
-                    this.socket.emit('start-stream', {
-                        device: deviceKey,
-                        quality: this.quality,
-                    });
-                } else {
-                    this.socket.emit('stop-stream', {
-                        device: deviceKey,
-                        quality: this.quality,
-                    });
-                }
+                device.canvas.enableWorker(enabled, this.quality);
             }
         });
     }

@@ -37,6 +37,12 @@ const DELAY_MS = 500;
 const MAX_DECODES = 20;
 const MAX_QUEUE_LENGTH = 30;
 
+// In theory, decoding images in the worker should be fasted
+// But in practice it isn't the case
+// In the worker we are forced to use createImageBitmap instead of HTMLImageElement which seems a lot slower for our 4K content
+// Probably because it's decoded in the RAM and then needs even more processing to copy to canvas
+const DECODE_IMAGE_IN_WORKER = false;
+
 export default class CanvasVideo implements CanvasVideoInterface {
     canvas: HTMLCanvasElement
     context: CanvasRenderingContext2D
@@ -47,6 +53,7 @@ export default class CanvasVideo implements CanvasVideoInterface {
     isDry: boolean = false
     debug: CanvasDebug | null = null
     framesBeingDecodedCount: number = 0
+    worker: Worker
 
     constructor(width: number, height: number) {
         this.canvas = document.createElement('canvas');
@@ -58,11 +65,88 @@ export default class CanvasVideo implements CanvasVideoInterface {
             desynchronized: true,
             // willReadFrequently doesn't help because then it's THREE.js that clogs the browser when it copies from our RAM canvas to its GPU texture
         });
+        this.context.imageSmoothingEnabled = false;
 
-        this.animate();
+        this.worker = new Worker('assets/videofeed.js');
+        this.worker.onmessage = event => {
+            if (event.data.pushFrame) {
+                this.pushFrame(event.data);
+
+                return;
+            }
+
+            if (event.data.imageToDraw) {
+                this.context.drawImage(event.data.imageToDraw, 0, 0, this.canvas.width, this.canvas.height);
+
+                this.textureUpdateListeners.forEach(callback => callback());
+
+                if (this.debug) {
+                    this.debug.drawnFrameCount++;
+                }
+
+                return;
+            }
+
+            if (typeof event.data.isDry !== 'undefined') {
+                this.isDry = event.data.isDry;
+                m.redraw();
+            }
+
+            if (this.debug) {
+                if (event.data.decoderDroppedFrameCount) {
+                    this.debug.decoderDroppedFrameCount++;
+                }
+                if (event.data.decodeFrameCount) {
+                    this.debug.decodeFrameCount++;
+                }
+                if (event.data.queueDroppedFrameCount) {
+                    this.debug.queueDroppedFrameCount++;
+                }
+                if (event.data.decoderDroppedFrameCount) {
+                    this.debug.decoderDroppedFrameCount++;
+                }
+                if (event.data.framesNotDecodedInTimeCount) {
+                    this.debug.framesNotDecodedInTimeCount++;
+                }
+                if (event.data.drawnDroppedFrameCount) {
+                    this.debug.drawnDroppedFrameCount++;
+                }
+                if (event.data.decodeTotalTime) {
+                    this.debug.decodeTotalTime += event.data.decodeTotalTime;
+                }
+                if (event.data.generationToDecodeTotalTime) {
+                    this.debug.generationToDecodeTotalTime += event.data.generationToDecodeTotalTime;
+
+                    if (event.data.generationToDecodeTotalTime > this.debug.generationToDecodeMaxTime) {
+                        this.debug.generationToDecodeMaxTime = event.data.generationToDecodeTotalTime;
+                    }
+                }
+            }
+        };
+
+        if (!DECODE_IMAGE_IN_WORKER) {
+            this.animate();
+        }
     }
 
-    pushFrame(data: { number: number, time: number, jpeg: ArrayBuffer }, quality: 'original' | 'low') {
+    initWorker(uri: string, deviceKey: string) {
+        this.worker.postMessage({
+            command: 'init',
+            uri,
+            deviceKey,
+            decodeInWorker: DECODE_IMAGE_IN_WORKER,
+        });
+    }
+
+    enableWorker(enabled: boolean = true, quality: string) {
+        this.worker.postMessage({
+            command: 'enable',
+            enabled,
+            quality,
+        });
+    }
+
+    pushFrame(data: { number: number, time: number, jpeg: ArrayBuffer }) {
         if (this.debug) {
             this.debug.websocketFrameCount++;
             this.debug.websocketTotalBytes += data.jpeg.byteLength;
