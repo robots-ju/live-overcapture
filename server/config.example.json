@@ -32,6 +32,10 @@
             "type": "theta",
             "width": 3840,
             "height": 1920,
+            "crop": {
+                "top": 200,
+                "bottom": 0
+            },
             "cameras": [
                 {
                     "key": "c",

@@ -54,11 +54,15 @@ export default class CanvasVideo implements CanvasVideoInterface {
     debug: CanvasDebug | null = null
     framesBeingDecodedCount: number = 0
     worker: Worker
+    cropTop: number
+    cropBottom: number
 
-    constructor(width: number, height: number) {
+    constructor(width: number, height: number, cropTop: number, cropBottom: number) {
         this.canvas = document.createElement('canvas');
         this.canvas.width = width;
         this.canvas.height = height;
+        this.cropTop = cropTop;
+        this.cropBottom = cropBottom;
         this.context = this.canvas.getContext('2d', {
             // I don't see much of an improvement with those attributes, but they are supposed to speed things up
             alpha: false,
@@ -76,13 +80,7 @@ export default class CanvasVideo implements CanvasVideoInterface {
             }
 
             if (event.data.imageToDraw) {
-                this.context.drawImage(event.data.imageToDraw, 0, 0, this.canvas.width, this.canvas.height);
-
-                this.textureUpdateListeners.forEach(callback => callback());
-
-                if (this.debug) {
-                    this.debug.drawnFrameCount++;
-                }
+                this.drawImageOnContext(event.data.imageToDraw);
 
                 return;
             }
@@ -264,14 +262,7 @@ export default class CanvasVideo implements CanvasVideoInterface {
             }
 
             if (frame) {
-                //this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                this.context.drawImage(frame.image, 0, 0, this.canvas.width, this.canvas.height);
-
-                this.textureUpdateListeners.forEach(callback => callback());
-
-                if (this.debug) {
-                    this.debug.drawnFrameCount++;
-                }
+                this.drawImageOnContext(frame.image);
             }
         } else if (!this.isDry && (!this.lastFrameTime || ((new Date()).getTime() - this.lastFrameTime.getTime()) > 5000)) {
             this.isDry = true;
@@ -279,6 +270,16 @@ export default class CanvasVideo implements CanvasVideoInterface {
         }
 
         requestAnimationFrame(this.animate.bind(this));
+    }
+
+    drawImageOnContext(image: HTMLImageElement | ImageBitmap) {
+        this.context.drawImage(image, 0, this.cropTop, this.canvas.width, this.canvas.height - this.cropTop - this.cropBottom);
+
+        this.textureUpdateListeners.forEach(callback => callback());
+
+        if (this.debug) {
+            this.debug.drawnFrameCount++;
+        }
     }
 
     onNeedsTextureUpdate(callback: () => void) {

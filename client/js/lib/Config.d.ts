@@ -7,6 +7,10 @@ export interface DeviceConfig {
     key: string
     width: number
     height: number
+    crop?: {
+        top?: number
+        bottom?: number
+    }
     cameras: CameraConfig[]
 }
 

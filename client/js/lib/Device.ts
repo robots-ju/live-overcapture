@@ -15,7 +15,7 @@ export default class Device {
     enabled: boolean = false
 
     constructor(config: DeviceConfig) {
-        this.canvas = new CanvasVideo(config.width, config.height);
+        this.canvas = new CanvasVideo(config.width, config.height, config.crop?.top || 0, config.crop?.bottom || 0);
     }
 
     pushState(state: DeviceState) {

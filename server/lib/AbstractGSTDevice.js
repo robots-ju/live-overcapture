@@ -6,6 +6,8 @@ module.exports = class AbstractGSTDevice {
         this.key = config.key;
         this.width = config.width;
         this.height = config.height;
+        this.cropTop = config.crop?.top || 0;
+        this.cropBottom = config.crop?.bottom || 0;
 
         this.cameras = config.cameras.map(cameraConfig => new Camera(cameraConfig));
 
@@ -16,13 +18,25 @@ module.exports = class AbstractGSTDevice {
         this.restartProcessOnExit = true;
     }
 
-    pipeLineToPipe(pipe) {
-        return ' ! jpegenc ! filesink location="' + pipe.path + '"';
+    pipelineQueue() {
+        return 'queue leaky=downstream max-size-time=500000000';
+    }
+
+    pipelineToPipe(pipe) {
+        return ' ! jpegenc ! ' + this.pipelineQueue() + ' ! filesink location="' + pipe.path + '"';
+    }
+
+    pipelineCrop() {
+        if (this.cropTop || this.cropBottom) {
+            return ' ! videocrop top=' + this.cropTop + ' bottom=' + this.cropBottom;
+        }
+
+        return '';
     }
 
     pipeline() {
-        return ' ! tee name=low ! queue' + this.pipeLineToPipe(this.pipeOriginal) +
-            ' low. ! queue ! videoscale ! video/x-raw,width=' + Math.round(this.width / 2) + ',height=' + Math.round(this.height / 2) + this.pipeLineToPipe(this.pipeLow);
+        return this.pipelineCrop() + ' ! tee name=low ! ' + this.pipelineQueue() + ' ' + this.pipelineToPipe(this.pipeOriginal) +
+            ' low. ! ' + this.pipelineQueue() + ' ! videoscale ! video/x-raw,width=' + Math.round(this.width / 2) + ',height=' + Math.round(this.height / 2) + this.pipelineToPipe(this.pipeLow);
     }
 
     /**
