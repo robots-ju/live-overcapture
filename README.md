@@ -51,12 +51,41 @@ npm run build
 
 ## Run
 
+### Server
+
 Edit `live-overcapture/server/config.json`.
 
 ```sh
 cd live-overcapture/server
 node server.js
 ```
+
+### Control and preview
+
+Serve the `client-dist` (generated above with `build` command) folder using a webserver, for example `php -S 0.0.0.0:4000`.
+
+Access `http://<server ip>/#!/control` in a browser.
+
+If the client is served from a different host than the NodeJS server, the server IP can be specified with the `host` query string: `http://<ui ip>/?host=<server ip>#/control`.
+
+The program can be accessed at `http://<server ip>/#!/program/<camera key>`.
+
+Multiple camera keys that belong to the same device can be specified with a `+`, like `http://192.168.1.10/#!/program/a+b`.
+This improves performance by using a single websocket, decoder and THREE.js scene and texture.
+
+### Adding as OBS source
+
+The program page can be added as a Browser source in OBS, however it seems like OBS disables some of the hardware acceleration in the embedded Browser sources, so it just can't keep up with the framerate.
+
+Instead, the page can be launched into a standalone window and captured with a window capture source.
+
+To ensure the proper sizing and no browser UI, launch Chrome from the command line:
+
+```sh
+/opt/google/chrome/chrome --window-size=800,800 --app=http://<server ip>/#\!/program/<camera key>
+```
+
+`!` must be escaped, or it will be read as a hashbang!
 
 ## Miscellaneous
 

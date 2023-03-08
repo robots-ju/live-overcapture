@@ -1,15 +1,17 @@
 import * as m from 'mithril';
 import Camera from '../lib/Camera';
-import Scene from '../lib/Scene';
+import ThreeScene from '../lib/ThreeScene';
+import ThreeCamera from '../lib/ThreeCamera';
 
 interface SceneContainerAttrs {
+    scene: ThreeScene
     camera: Camera
     width: number
     height: number
 }
 
 export default class SceneContainer implements m.ClassComponent<SceneContainerAttrs> {
-    scene: Scene
+    camera: ThreeCamera
 
     view(vnode: m.VnodeDOM<SceneContainerAttrs, this>) {
         return m('.SceneContainer', m('.SceneDry', {
@@ -20,14 +22,14 @@ export default class SceneContainer implements m.ClassComponent<SceneContainerAt
     oninit(vnode: m.Vnode<SceneContainerAttrs, this>) {
         const {camera, width, height} = vnode.attrs;
 
-        this.scene = new Scene(camera, width, height);
+        this.camera = new ThreeCamera(camera, width, height, vnode.attrs.scene);
     }
 
     oncreate(vnode: m.VnodeDOM) {
-        this.scene.mount(vnode.dom as HTMLElement);
+        this.camera.mount(vnode.dom as HTMLElement);
     }
 
     onremove() {
-        this.scene.unmount();
+        this.camera.unmount();
     }
 }

@@ -33,11 +33,11 @@ interface QueueEntry {
     ready: boolean
 }
 
-const DELAY_MS = 500;
+const DELAY_MS = 250;
 const MAX_DECODES = 20;
 const MAX_QUEUE_LENGTH = 30;
 
-// In theory, decoding images in the worker should be fasted
+// In theory, decoding images in the worker should be faster
 // But in practice it isn't the case
 // In the worker we are forced to use createImageBitmap instead of HTMLImageElement which seems a lot slower for our 4K content
 // Probably because it's decoded in the RAM and then needs even more processing to copy to canvas
@@ -262,14 +262,17 @@ export default class CanvasVideo implements CanvasVideoInterface {
             }
 
             if (frame) {
-                this.drawImageOnContext(frame.image);
+                setTimeout(() => {
+                    this.drawImageOnContext(frame.image);
+                }, 0);
             }
         } else if (!this.isDry && (!this.lastFrameTime || ((new Date()).getTime() - this.lastFrameTime.getTime()) > 5000)) {
             this.isDry = true;
             m.redraw();
         }
 
-        requestAnimationFrame(this.animate.bind(this));
+        // Using a regular timeout instead of requestAnimation seems to bring some improvement
+        setTimeout(this.animate.bind(this), 5);
     }
 
     drawImageOnContext(image: HTMLImageElement | ImageBitmap) {

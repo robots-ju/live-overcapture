@@ -8,6 +8,9 @@ interface ControlAttrs {
 }
 
 export default class Control implements m.ClassComponent<ControlAttrs> {
+    oninit(vnode: m.Vnode<ControlAttrs, this>) {
+        document.title = 'Live Overcapture - ' + vnode.attrs.app.uri + ' - Control';
+    }
 
     view(vnode: m.VnodeDOM<ControlAttrs, this>) {
         const {app} = vnode.attrs;

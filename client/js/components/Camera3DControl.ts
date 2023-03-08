@@ -3,6 +3,7 @@ import App from '../lib/App';
 import Camera from '../lib/Camera';
 import CameraOrientation from '../lib/CameraOrientation';
 import SceneContainer from './SceneContainer';
+import ThreeScene from '../lib/ThreeScene';
 
 interface Camera3DControlAttrs {
     app: App
@@ -15,6 +16,12 @@ export default class Camera3DControl implements m.ClassComponent<Camera3DControl
     mouseMoveCallback!: (event: MouseEvent) => void
     mouseUpCallback!: () => void
     dragActive: { x: number, y: number, orientation: CameraOrientation } | null
+    scene: ThreeScene
+
+    oninit(vnode: m.Vnode<Camera3DControlAttrs, this>) {
+        this.scene = new ThreeScene(vnode.attrs.camera.device);
+        this.scene.init();
+    }
 
     view(vnode: m.VnodeDOM<Camera3DControlAttrs, this>) {
         const {camera} = vnode.attrs;
@@ -61,5 +68,6 @@ export default class Camera3DControl implements m.ClassComponent<Camera3DControl
     onremove() {
         document.removeEventListener('mousemove', this.mouseMoveCallback);
         document.removeEventListener('mouseup', this.mouseUpCallback);
+        this.scene.destroy();
     }
 }

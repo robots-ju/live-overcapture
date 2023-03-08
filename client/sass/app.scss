@@ -9,6 +9,11 @@ html, body {
     position: relative;
 }
 
+.MultiSceneContainer {
+    display: flex;
+    justify-content: space-between;
+}
+
 .SceneDry {
     position: absolute;
     top: 0;

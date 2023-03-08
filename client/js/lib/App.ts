@@ -6,6 +6,7 @@ import CameraOrientation from './CameraOrientation';
 import {AppConfig, AppState} from './Config';
 
 export default class App {
+    uri: string = '<unknwon uri>' // Set during connect, to be used in titles
     socket: Socket | null = null
     devices: { [key: string]: Device } = {}
     cameras: { [key: string]: Camera } = {}
@@ -37,6 +38,7 @@ export default class App {
     }
 
     connect(uri: string) {
+        this.uri = uri;
         this.socket = io(uri);
 
         this.socket.on('config', (config: AppConfig) => {

@@ -32,7 +32,11 @@ onmessage = (event) => {
             deviceKey = event.data.deviceKey;
 
             if (event.data.decodeInWorker) {
-                socket.on('frame', pushFrame);
+                socket.on('frame', data => {
+                    setTimeout(() => {
+                        pushFrame(data)
+                    }, 0);
+                });
             } else {
                 socket.on('frame', data => {
                     postMessage({
@@ -166,7 +170,7 @@ function animate() {
         });
     }
 
-    requestAnimationFrame(animate);
+    setTimeout(animate, 10);
 }
 
 animate();
