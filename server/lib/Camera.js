@@ -6,8 +6,7 @@ module.exports = class Camera {
 
         this.key = config.key;
         this.ratio = config.ratio || 1;
-        this.orientation = {
-            type: 'fixed',
+        this.target = {
             to: {
                 pitch: config.pitch || 0,
                 yaw: config.yaw || 0,
@@ -16,19 +15,10 @@ module.exports = class Camera {
         };
     }
 
-    setFixedOrientation(orientation) {
-        this.orientation = {
-            type: 'fixed',
+    setTarget(orientation, jump = false) {
+        this.target = {
             to: orientation,
-        };
-    }
-
-    setAnimatedOrientation(orientation) {
-        this.orientation = {
-            type: 'animated',
-            to: orientation,
-            from: this.orientation.to,
-            time: (new Date()).getTime(),
+            jump,
         };
     }
 }

@@ -16,6 +16,7 @@ export default class CameraFlatControl implements m.ClassComponent<CameraFlatCon
     width: number
     height: number
     mousePosition: CameraOrientation | null
+    targetFov: number = -1
 
     mousePositionToCameraOrientation(event: MouseEvent) {
         const rect = (event.target as HTMLCanvasElement).getBoundingClientRect();
@@ -69,17 +70,23 @@ export default class CameraFlatControl implements m.ClassComponent<CameraFlatCon
                 // @ts-ignore
                 event.redraw = false;
                 this.mousePosition = null;
+                this.targetFov = -1;
+            },
+            onwheel: (event: WheelEvent) => {
+                // @ts-ignore
+                event.redraw = false;
+                this.targetFov = Math.max(Math.min((this.targetFov === -1 ? this.camera.currentOrientation.fov : this.targetFov) + (event.deltaY > 0 ? 2 : -2), this.camera.maxFov), this.camera.minFov);
             },
             onclick: (event: MouseEvent) => {
                 // @ts-ignore
                 event.redraw = false;
                 const position = this.mousePositionToCameraOrientation(event);
 
-                vnode.attrs.app.sendCameraOrientation(this.camera.key, {
+                vnode.attrs.app.sendCameraTarget(this.camera.key, {
                     pitch: position.pitch,
                     yaw: position.yaw,
-                    fov: 75,
-                }, false);
+                    fov: this.targetFov === -1 ? this.camera.currentOrientation.fov : this.targetFov,
+                }, event.ctrlKey);
             },
             width: this.width,
             height: this.height,
@@ -107,10 +114,13 @@ export default class CameraFlatControl implements m.ClassComponent<CameraFlatCon
 
         this.context.drawImage(this.camera.device.canvas.canvas, 0, 0, this.width, this.height);
 
-        this.drawTarget(this.camera.orientation.to, 'rgba(0,200,0,0.7)');
+        this.drawTarget(this.camera.currentOrientation, 'rgba(0,200,0,0.7)');
 
         if (this.mousePosition) {
-            this.drawTarget(this.mousePosition, 'rgba(255,255,255,0.7)');
+            this.drawTarget({
+                ...this.mousePosition,
+                fov: this.targetFov === -1 ? this.camera.currentOrientation.fov : this.targetFov,
+            }, 'rgba(255,255,255,0.7)');
         }
 
         requestAnimationFrame(this.animate.bind(this));

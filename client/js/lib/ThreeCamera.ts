@@ -37,7 +37,7 @@ export default class ThreeCamera {
             return;
         }
 
-        this.threeCamera = new THREE.PerspectiveCamera(75, this.width / this.height, 1, 1000);
+        this.threeCamera = new THREE.PerspectiveCamera(this.camera.currentOrientation.fov || 75, this.width / this.height, 1, 1000);
         this.threeCamera.position.set(0, 0, 0);
 
         this.renderer = new THREE.WebGLRenderer({
@@ -56,9 +56,13 @@ export default class ThreeCamera {
         requestAnimationFrame(this.animate.bind(this));
 
         // TODO: animation
-        const rotation = orientationToRotation(this.camera.orientation.to);
+        const rotation = orientationToRotation(this.camera.currentOrientation);
 
         this.threeCamera.rotation.set(rotation.x, rotation.y, rotation.z, 'YXZ');
+        if (this.threeCamera.fov !== this.camera.currentOrientation.fov) {
+            this.threeCamera.fov = this.camera.currentOrientation.fov;
+            this.threeCamera.updateProjectionMatrix();
+        }
 
         this.renderer.render(this.scene.scene, this.threeCamera);
     }

@@ -74,11 +74,11 @@ export default class App {
             device.pushState(data.state);
         });
 
-        this.socket.on('camera-position', data => {
+        this.socket.on('camera-target', data => {
             const camera = this.cameras[data.camera];
 
             if (camera) {
-                camera.orientation = data.orientation;
+                camera.setTarget(data.target);
             }
         });
 
@@ -89,14 +89,15 @@ export default class App {
         });
     }
 
-    sendCameraOrientation(cameraKey: string, orientation: CameraOrientation, animate: boolean = false) {
+    sendCameraTarget(cameraKey: string, orientation: CameraOrientation, jump: boolean = false) {
         if (!this.socket) {
             console.warn('Cannot send camera orientation, socket not available');
         }
 
-        this.socket.emit(animate ? 'animate-camera' : 'fix-camera', {
+        this.socket.emit('camera-target', {
             camera: cameraKey,
             orientation,
+            jump,
         });
     }
 

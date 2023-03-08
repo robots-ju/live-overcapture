@@ -65,28 +65,14 @@ io.on('connection', function (socket) {
         device.pipeLow.removeClient(socket);
     });
 
-    socket.on('fix-camera', function (data) {
+    socket.on('camera-target', function (data) {
         Object.values(devices).forEach(device => {
             device.cameras.forEach(camera => {
                 if (camera.key === data.camera) {
-                    camera.setFixedOrientation(data.orientation);
-                    io.emit('camera-position', {
+                    camera.setTarget(data.orientation, !!data.jump);
+                    io.emit('camera-target', {
                         camera: camera.key,
-                        orientation: camera.orientation
-                    });
-                }
-            });
-        });
-    });
-
-    socket.on('animate-camera', function (data) {
-        Object.values(devices).forEach(device => {
-            device.cameras.forEach(camera => {
-                if (camera.key === data.camera) {
-                    camera.setAnimatedOrientation(data.orientation);
-                    io.emit('camera-position', {
-                        camera: camera.key,
-                        orientation: camera.orientation
+                        target: camera.target,
                     });
                 }
             });
