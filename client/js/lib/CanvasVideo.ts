@@ -145,17 +145,22 @@ export default class CanvasVideo implements CanvasVideoInterface {
     }
 
     pushFrame(data: { number: number, time: number, jpeg: ArrayBuffer }) {
-        if (this.debug) {
-            this.debug.websocketFrameCount++;
-            this.debug.websocketTotalBytes += data.jpeg.byteLength;
+        // Copy reference to debug object so that even if it changes before the image onload/onerror callbacks the code doesn't break
+        // if debug was turned off, it'll simply write to the old debug object that will be garbage collected by the browser
+        // also gives stats a bit more integrity by not having impossible numbers if enabled while something is in progress
+        const {debug} = this;
+
+        if (debug) {
+            debug.websocketFrameCount++;
+            debug.websocketTotalBytes += data.jpeg.byteLength;
         }
 
         this.lastFrameTime = new Date();
         this.lastReceivedFrameNumber = data.number;
 
         if (this.framesBeingDecodedCount > MAX_DECODES) {
-            if (this.debug) {
-                this.debug.decoderDroppedFrameCount++;
+            if (debug) {
+                debug.decoderDroppedFrameCount++;
             }
 
             return;
@@ -165,8 +170,8 @@ export default class CanvasVideo implements CanvasVideoInterface {
 
         let startTime: Date;
 
-        if (this.debug) {
-            this.debug.decodeFrameCount += 1;
+        if (debug) {
+            debug.decodeFrameCount += 1;
             startTime = new Date();
         }
 
@@ -177,16 +182,16 @@ export default class CanvasVideo implements CanvasVideoInterface {
 
             URL.revokeObjectURL(url);
 
-            if (this.debug) {
+            if (debug) {
                 const endTime = (new Date()).getTime()
                 const decodeTime = endTime - startTime.getTime();
                 const timeFromGeneration = endTime - data.time;
 
-                this.debug.decodeTotalTime += decodeTime;
-                this.debug.generationToDecodeTotalTime += timeFromGeneration;
+                debug.decodeTotalTime += decodeTime;
+                debug.generationToDecodeTotalTime += timeFromGeneration;
 
-                if (timeFromGeneration > this.debug.generationToDecodeMaxTime) {
-                    this.debug.generationToDecodeMaxTime = timeFromGeneration;
+                if (timeFromGeneration > debug.generationToDecodeMaxTime) {
+                    debug.generationToDecodeMaxTime = timeFromGeneration;
                 }
             }
 
@@ -195,8 +200,8 @@ export default class CanvasVideo implements CanvasVideoInterface {
         img.onerror = () => {
             URL.revokeObjectURL(url);
 
-            if (this.debug) {
-                this.debug.decodeFailCount += 1;
+            if (debug) {
+                debug.decodeFailCount += 1;
                 // TODO: also calculate execution time for errors? It's unlikely to happen
             }
 
@@ -206,8 +211,8 @@ export default class CanvasVideo implements CanvasVideoInterface {
         if (this.queue.length > MAX_QUEUE_LENGTH) {
             this.queue.shift();
 
-            if (this.debug) {
-                this.debug.queueDroppedFrameCount++;
+            if (debug) {
+                debug.queueDroppedFrameCount++;
             }
         }
 
