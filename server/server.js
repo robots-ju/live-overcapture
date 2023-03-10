@@ -21,8 +21,12 @@ const io = new Server(config.websocket.port, {
 
 let frontendDebug = false;
 
+let clientIdIncrement = 0;
+
 io.on('connection', function (socket) {
-    console.log('client connected');
+    const clientName = '[socket.io#' + (++clientIdIncrement) + '@' + socket.request.socket.remoteAddress + '] ';
+
+    console.log(clientName + 'connected');
 
     socket.emit('config', config);
 
@@ -33,16 +37,22 @@ io.on('connection', function (socket) {
         });
         Object.values(devices).forEach(device => {
             socket.emit('device', device.socketInfoPayload());
+            device.cameras.forEach(camera => {
+                socket.emit('camera-target', {
+                    ...camera.socketTargetPayload(),
+                    init: true,
+                });
+            });
         });
     }, 1000);
 
     socket.on('start-stream', function (data) {
-        console.log('client start stream: ' + data.quality + ' / device: ' + data.device);
+        console.log(clientName + 'start stream: ' + data.quality + ' / device: ' + data.device);
 
         const device = devices[data.device];
 
         if (!device) {
-            console.error('Invalid device ' + data.device);
+            console.error(clientName + 'Invalid device ' + data.device);
         }
 
         if (data.quality === 'original') {
@@ -53,7 +63,7 @@ io.on('connection', function (socket) {
     });
 
     socket.on('stop-stream', function (data) {
-        console.log('client stop stream');
+        console.log(clientName + 'stop stream');
 
         const device = devices[data.device];
 
@@ -70,10 +80,7 @@ io.on('connection', function (socket) {
             device.cameras.forEach(camera => {
                 if (camera.key === data.camera) {
                     camera.setTarget(data.orientation, !!data.jump);
-                    io.emit('camera-target', {
-                        camera: camera.key,
-                        target: camera.target,
-                    });
+                    io.emit('camera-target', camera.socketTargetPayload());
                 }
             });
         });
@@ -81,17 +88,17 @@ io.on('connection', function (socket) {
 
     socket.on('debug', function (data) {
         frontendDebug = !!data;
-        socket.emit('app', {
+        io.emit('app', {
             debug: frontendDebug,
         });
     });
 
     socket.on('force-program-refresh', function () {
-        socket.emit('force-program-refresh');
+        io.emit('force-program-refresh');
     });
 
     socket.on('disconnect', function () {
-        console.log('client disconnected');
+        console.log(clientName + 'disconnected');
 
         Object.values(devices).forEach(device => {
             device.pipeOriginal.removeClient(socket);

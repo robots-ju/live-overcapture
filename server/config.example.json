@@ -36,6 +36,7 @@
                 "top": 200,
                 "bottom": 0
             },
+            "delay": 300,
             "cameras": [
                 {
                     "key": "c",

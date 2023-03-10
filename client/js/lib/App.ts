@@ -78,12 +78,17 @@ export default class App {
             const camera = this.cameras[data.camera];
 
             if (camera) {
+                // If this is the first payload on page (re)load, we don't want the transition from zero to be animated
+                if (data.init) {
+                    data.target.jump = true;
+                }
+
                 camera.setTarget(data.target);
             }
         });
 
         this.socket.on('force-program-refresh', data => {
-            if (m.route.get() === '/program') {
+            if (m.route.get().indexOf('/program/') === 0) {
                 window.location.reload();
             }
         });
@@ -172,6 +177,10 @@ export default class App {
 
     toggleDebug() {
         this.socket.emit('debug', !this.state.debug);
+    }
+
+    forceRefresh() {
+        this.socket.emit('force-program-refresh', 1);
     }
 
     animateDebug() {

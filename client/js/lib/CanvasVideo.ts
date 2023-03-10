@@ -33,7 +33,6 @@ interface QueueEntry {
     ready: boolean
 }
 
-const DELAY_MS = 250;
 const MAX_DECODES = 20;
 const MAX_QUEUE_LENGTH = 30;
 
@@ -56,13 +55,15 @@ export default class CanvasVideo implements CanvasVideoInterface {
     worker: Worker
     cropTop: number
     cropBottom: number
+    delayMs: number
 
-    constructor(width: number, height: number, cropTop: number, cropBottom: number) {
+    constructor(width: number, height: number, cropTop: number, cropBottom: number, delayMs: number) {
         this.canvas = document.createElement('canvas');
         this.canvas.width = width;
         this.canvas.height = height;
         this.cropTop = cropTop;
         this.cropBottom = cropBottom;
+        this.delayMs = delayMs;
         this.context = this.canvas.getContext('2d', {
             // I don't see much of an improvement with those attributes, but they are supposed to speed things up
             alpha: false,
@@ -239,7 +240,7 @@ export default class CanvasVideo implements CanvasVideoInterface {
                 m.redraw();
             }
 
-            const drawingTime = (new Date()).getTime() - DELAY_MS;
+            const drawingTime = (new Date()).getTime() - this.delayMs;
 
             let frame: QueueEntry | null = null;
 

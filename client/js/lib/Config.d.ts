@@ -11,6 +11,7 @@ export interface DeviceConfig {
         top?: number
         bottom?: number
     }
+    delay?: number
     cameras: CameraConfig[]
 }
 

@@ -21,4 +21,11 @@ module.exports = class Camera {
             jump,
         };
     }
+
+    socketTargetPayload() {
+        return {
+            camera: this.key,
+            target: this.target,
+        };
+    }
 }

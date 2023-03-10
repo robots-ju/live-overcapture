@@ -19,21 +19,30 @@ export default class Control implements m.ClassComponent<ControlAttrs> {
         const cameraKeys = Object.keys(app.cameras);
 
         return m('div', [
-            m('div', m('label', [
-                m('input', {
-                    type: 'checkbox',
-                    checked: app.quality === 'original',
-                    onchange: () => {
-                        app.changeQuality(app.quality === 'original' ? 'low' : 'original');
+            m('div', [
+                m('button', {
+                    onclick: () => {
+                        app.toggleDebug();
                     },
-                }),
-                ' Preview in original quality',
-            ])),
-            m('button', {
-                onclick: () => {
-                    app.toggleDebug();
-                },
-            }, 'Toggle debug'),
+                }, 'Toggle debug'),
+                ' ',
+                m('button', {
+                    onclick: () => {
+                        app.forceRefresh();
+                    },
+                }, 'Force refresh all program windows'),
+                ' ',
+                m('label', [
+                    m('input', {
+                        type: 'checkbox',
+                        checked: app.quality === 'original',
+                        onchange: () => {
+                            app.changeQuality(app.quality === 'original' ? 'low' : 'original');
+                        },
+                    }),
+                    ' Preview in original quality',
+                ]),
+            ]),
             m('h2', 'Devices'),
             deviceKeys.length ? m('ul', deviceKeys.map(key => {
                 const device = app.devices[key];

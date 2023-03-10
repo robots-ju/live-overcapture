@@ -7,6 +7,8 @@ export interface DeviceInterface {
     canvas: CanvasVideoInterface
 }
 
+const DEFAULT_DELAY_MS = 250;
+
 export default class Device {
     state: DeviceState = {
         battery: null,
@@ -15,7 +17,7 @@ export default class Device {
     enabled: boolean = false
 
     constructor(config: DeviceConfig) {
-        this.canvas = new CanvasVideo(config.width, config.height, config.crop?.top || 0, config.crop?.bottom || 0);
+        this.canvas = new CanvasVideo(config.width, config.height, config.crop?.top || 0, config.crop?.bottom || 0, config.delay || DEFAULT_DELAY_MS);
     }
 
     pushState(state: DeviceState) {
