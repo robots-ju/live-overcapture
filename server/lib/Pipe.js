@@ -34,7 +34,7 @@ module.exports = class Pipe {
         }
 
         setInterval(() => {
-            console.log('[' + (new Date()).toString() + '] Pipe ' + this.path + ' stats: ' + (Math.round(this.framesInStatsInterval / STATS_INTERVAL_SECONDS * 10) / 10) + 'frames/s');
+            console.log('[' + (new Date()).toISOString() + '] Pipe ' + this.path + ' stats: ' + (Math.round(this.framesInStatsInterval / STATS_INTERVAL_SECONDS * 10) / 10) + 'frames/s');
             this.framesInStatsInterval = 0;
         }, STATS_INTERVAL_SECONDS * 1000);
     }
