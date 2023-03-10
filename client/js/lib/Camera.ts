@@ -70,7 +70,13 @@ export default class Camera {
         if (this.lastAnimationTime) {
             const elapsed = time - this.lastAnimationTime;
 
-            const diffX = this.targetOrientation.to.yaw - this.currentOrientation.yaw;
+            const rawDiffX = this.targetOrientation.to.yaw - this.currentOrientation.yaw;
+
+            // If it's shorter to go to the target yaw by going through one edge and coming back the other,
+            // The target will be calculated like if going out of the screen and the modulo below will convert back to actual position
+            const targetYaw = this.targetOrientation.to.yaw + (Math.abs(rawDiffX) > 180 ? (rawDiffX > 0 ? -360 : 360) : 0);
+
+            const diffX = targetYaw - this.currentOrientation.yaw;
             const diffY = this.targetOrientation.to.pitch - this.currentOrientation.pitch;
 
             const distanceToTarget = Math.sqrt(Math.pow(Math.abs(diffX), 2) + Math.pow(Math.abs(diffY), 2));
