@@ -10,6 +10,7 @@ interface Camera3DControlAttrs {
     camera: Camera
 }
 
+const CANVAS_WIDTH = 500;
 const DEGREES_PER_PIXEL_MOVED = 0.1;
 const FOV_ZOOM_PER_STEP = 0.005;
 
@@ -44,8 +45,8 @@ export default class Camera3DControl implements m.ClassComponent<Camera3DControl
             },
         }, m(SceneContainer, {
             camera,
-            width: 500,
-            height: 500,
+            width: CANVAS_WIDTH,
+            height: Math.round(CANVAS_WIDTH / camera.ratio),
             scene: this.scene,
         }));
     }

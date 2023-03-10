@@ -58,7 +58,7 @@ export default class CameraFlatControl implements m.ClassComponent<CameraFlatCon
         const y = (0.5 - (orientation.pitch / 180)) * this.height;
 
         const height = orientation.fov / 180 * this.height;
-        const widthAtEquator = orientation.fov / 360 * this.width;
+        const widthAtEquator = orientation.fov * this.camera.ratio / 360 * this.width;
         // I just can't figure out the math needed here, but this seems like a good approximation for now
         const percentLookingUp = (1 - (Math.abs(orientation.pitch - (orientation.fov / 2)) / 90)) * 1.8;
         const percentLookingDown = (1 - (Math.abs(orientation.pitch + (orientation.fov / 2)) / 90)) * 1.8;

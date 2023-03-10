@@ -13,6 +13,7 @@ const SPEED_DEGREES_PER_SECOND = 50;
 
 export default class Camera {
     key: string
+    ratio: number
     device: DeviceInterface
     // Those orientations are only while waiting for the initial orientation from server
     targetOrientation: CameraOrientationTarget = {
@@ -39,6 +40,7 @@ export default class Camera {
 
     constructor(device: DeviceInterface, config: CameraConfig) {
         this.key = config.key;
+        this.ratio = config.ratio || 1;
         this.device = device;
 
         if (typeof config['min-fov'] !== 'undefined') {

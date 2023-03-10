@@ -1,6 +1,6 @@
 export interface CameraConfig {
     key: string
-    ratio: number
+    ratio?: number
 }
 
 export interface DeviceConfig {

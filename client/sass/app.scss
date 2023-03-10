@@ -1,8 +1,13 @@
 @import "~@fortawesome/fontawesome-free/scss/fontawesome";
 @import "~@fortawesome/fontawesome-free/scss/solid";
 
-body {
-    margin: 5px;
+html, body {
+    // Don't want any margin on the program page
+    margin: 0;
+}
+
+.ControlPanel {
+    padding: 5px;
 }
 
 h2, ul {

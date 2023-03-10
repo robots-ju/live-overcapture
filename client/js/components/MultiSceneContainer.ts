@@ -42,9 +42,9 @@ export default class MultiSceneContainer implements m.ClassComponent<ProgramAttr
             return m(SceneContainer, {
                 camera,
                 // If there are multiple cameras, shrink them as necessary to fit the screen
-                // If there is enough space to make each square, don't stretch them any further
+                // If there is enough space to fit the configured ratio, don't stretch them any further
                 // We'll use CSS to create the space between them
-                width: cameras.length === 1 ? window.innerWidth : Math.min(window.innerWidth / cameras.length, window.innerHeight),
+                width: cameras.length === 1 ? window.innerWidth : Math.floor(Math.min(window.innerWidth / cameras.length, window.innerHeight * camera.ratio)),
                 height: window.innerHeight,
                 scene: this.scene,
             });

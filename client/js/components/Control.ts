@@ -18,7 +18,7 @@ export default class Control implements m.ClassComponent<ControlAttrs> {
         const deviceKeys = Object.keys(app.devices);
         const cameraKeys = Object.keys(app.cameras);
 
-        return m('div', [
+        return m('.ControlPanel', [
             m('div', [
                 m('button', {
                     onclick: () => {
