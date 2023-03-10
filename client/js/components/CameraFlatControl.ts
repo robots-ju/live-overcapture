@@ -11,6 +11,7 @@ interface CameraFlatControlAttrs {
 // Width of the 3D camera controls + other margins to keep while trying to make the canvas as wide as possible
 const KEEP_HORIZONTAL_SPACE = 700;
 const CANVAS_MIN_WIDTH = 500;
+const YAW_OFFSET = 90; // degrees
 
 export default class CameraFlatControl implements m.ClassComponent<CameraFlatControlAttrs> {
     app: App
@@ -19,12 +20,13 @@ export default class CameraFlatControl implements m.ClassComponent<CameraFlatCon
     running: boolean = true
     width: number
     height: number
+    yawOffsetPixels: number
     mousePosition: CameraOrientation | null
     targetFov: number = -1
 
     mousePositionToCameraOrientation(event: MouseEvent) {
         const rect = (event.target as HTMLCanvasElement).getBoundingClientRect();
-        const xProportional = (event.clientX - rect.left) / rect.width;
+        const xProportional = (event.clientX - rect.left - this.yawOffsetPixels) / rect.width;
         const yProportional = (event.clientY - rect.top) / rect.height;
 
         return {
@@ -38,6 +40,7 @@ export default class CameraFlatControl implements m.ClassComponent<CameraFlatCon
 
         // It's not a big performance impact to always draw the shape coming from the other direction,
         // even if most of the time it will be outside the visible area of the canvas
+        // Also takes care of the yaw offset
         this.drawSingleTarget({
             pitch: orientation.pitch,
             yaw: orientation.yaw - 360,
@@ -51,7 +54,7 @@ export default class CameraFlatControl implements m.ClassComponent<CameraFlatCon
     }
 
     drawSingleTarget(orientation: CameraOrientation, color: string) {
-        const x = ((orientation.yaw / 360) + 0.5) * this.width;
+        const x = ((orientation.yaw / 360) + 0.5) * this.width + this.yawOffsetPixels;
         const y = (0.5 - (orientation.pitch / 180)) * this.height;
 
         const height = orientation.fov / 180 * this.height;
@@ -120,6 +123,7 @@ export default class CameraFlatControl implements m.ClassComponent<CameraFlatCon
 
         this.width = Math.max(window.innerWidth - KEEP_HORIZONTAL_SPACE, CANVAS_MIN_WIDTH);
         this.height = camera.device.canvas.canvas.height / camera.device.canvas.canvas.width * this.width;
+        this.yawOffsetPixels = Math.round(this.width / 360 * YAW_OFFSET);
     }
 
     oncreate(vnode) {
@@ -133,7 +137,11 @@ export default class CameraFlatControl implements m.ClassComponent<CameraFlatCon
             return;
         }
 
-        this.context.drawImage(this.camera.device.canvas.canvas, 0, 0, this.width, this.height);
+        this.context.drawImage(this.camera.device.canvas.canvas, this.yawOffsetPixels, 0, this.width, this.height);
+
+        if (this.yawOffsetPixels !== 0) {
+            this.context.drawImage(this.camera.device.canvas.canvas, this.yawOffsetPixels + (this.width * (this.yawOffsetPixels > 0 ? -1 : 1)), 0, this.width, this.height);
+        }
 
         this.drawTarget(this.camera.currentOrientation, 'rgba(0,200,0,0.7)');
 
