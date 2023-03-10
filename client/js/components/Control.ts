@@ -66,7 +66,7 @@ export default class Control implements m.ClassComponent<ControlAttrs> {
                 ]));
             })) : m('p', 'No devices available'),
             m('h2', 'Control'),
-            cameraKeys.length ? m('ul', cameraKeys.map(key => {
+            cameraKeys.length ? m('.CameraControlList', cameraKeys.map(key => {
                 const camera = app.cameras[key];
 
                 if (!camera.enabled) {

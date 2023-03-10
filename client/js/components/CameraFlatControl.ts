@@ -8,6 +8,10 @@ interface CameraFlatControlAttrs {
     camera: Camera
 }
 
+// Width of the 3D camera controls + other margins to keep while trying to make the canvas as wide as possible
+const KEEP_HORIZONTAL_SPACE = 700;
+const CANVAS_MIN_WIDTH = 500;
+
 export default class CameraFlatControl implements m.ClassComponent<CameraFlatControlAttrs> {
     app: App
     camera: Camera
@@ -30,6 +34,23 @@ export default class CameraFlatControl implements m.ClassComponent<CameraFlatCon
     }
 
     drawTarget(orientation: CameraOrientation, color: string) {
+        this.drawSingleTarget(orientation, color);
+
+        // It's not a big performance impact to always draw the shape coming from the other direction,
+        // even if most of the time it will be outside the visible area of the canvas
+        this.drawSingleTarget({
+            pitch: orientation.pitch,
+            yaw: orientation.yaw - 360,
+            fov: orientation.fov,
+        }, color);
+        this.drawSingleTarget({
+            pitch: orientation.pitch,
+            yaw: orientation.yaw + 360,
+            fov: orientation.fov,
+        }, color);
+    }
+
+    drawSingleTarget(orientation: CameraOrientation, color: string) {
         const x = ((orientation.yaw / 360) + 0.5) * this.width;
         const y = (0.5 - (orientation.pitch / 180)) * this.height;
 
@@ -97,7 +118,7 @@ export default class CameraFlatControl implements m.ClassComponent<CameraFlatCon
         const {camera} = vnode.attrs;
         this.camera = camera;
 
-        this.width = 500;
+        this.width = Math.max(window.innerWidth - KEEP_HORIZONTAL_SPACE, CANVAS_MIN_WIDTH);
         this.height = camera.device.canvas.canvas.height / camera.device.canvas.canvas.width * this.width;
     }
 
