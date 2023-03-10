@@ -36,7 +36,6 @@ io.on('connection', function (socket) {
             debug: frontendDebug,
         });
         Object.values(devices).forEach(device => {
-            socket.emit('device', device.socketInfoPayload());
             device.cameras.forEach(camera => {
                 socket.emit('camera-target', {
                     ...camera.socketTargetPayload(),

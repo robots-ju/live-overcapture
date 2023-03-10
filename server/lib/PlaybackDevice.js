@@ -21,10 +21,4 @@ module.exports = class PlaybackDevice extends AbstractGSTDevice {
             ...pipeline.split(' '),
         ]);
     }
-
-    socketInfo() {
-        return {
-            battery: null,
-        };
-    }
 }

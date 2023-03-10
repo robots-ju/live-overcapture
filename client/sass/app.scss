@@ -1,7 +1,11 @@
 @import "~@fortawesome/fontawesome-free/scss/fontawesome";
 @import "~@fortawesome/fontawesome-free/scss/solid";
 
-html, body {
+body {
+    margin: 5px;
+}
+
+h2, ul {
     margin: 0;
 }
 
@@ -34,11 +38,7 @@ html, body {
 
 .CameraFlatControl {
     cursor: crosshair;
-    margin: 20px;
-}
-
-.Camera3DControl {
-    margin: 20px 0;
+    margin-right: 10px;
 }
 
 .CameraControl {

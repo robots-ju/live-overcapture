@@ -15,10 +15,4 @@ module.exports = class ThetaDevice extends AbstractGSTDevice {
 
         return spawn(path.join(__dirname, '..', '..', 'theta', 'gst_viewer'), [pipeline]);
     }
-
-    socketInfo() {
-        return {
-            battery: 0,
-        };
-    }
 }

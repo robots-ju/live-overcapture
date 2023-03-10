@@ -1,6 +1,5 @@
-import * as m from 'mithril';
 import CanvasVideo, {CanvasVideoInterface, StaticCanvasVideo} from './CanvasVideo';
-import {DeviceConfig, DeviceState} from './Config';
+import {DeviceConfig} from './Config';
 
 export interface DeviceInterface {
 
@@ -10,19 +9,17 @@ export interface DeviceInterface {
 const DEFAULT_DELAY_MS = 250;
 
 export default class Device {
-    state: DeviceState = {
-        battery: null,
-    }
     canvas: CanvasVideo
     enabled: boolean = false
+    description: string
 
     constructor(config: DeviceConfig) {
-        this.canvas = new CanvasVideo(config.width, config.height, config.crop?.top || 0, config.crop?.bottom || 0, config.delay || DEFAULT_DELAY_MS);
-    }
+        const cropTop = config.crop?.top || 0;
+        const cropBottom = config.crop?.bottom || 0;
+        const delay = config.delay || DEFAULT_DELAY_MS;
 
-    pushState(state: DeviceState) {
-        this.state = state;
-        m.redraw();
+        this.canvas = new CanvasVideo(config.width, config.height, cropTop, cropBottom, delay);
+        this.description = 'source ' + config.width + 'x' + config.height + ' / crop ' + cropTop + ' ' + cropBottom + ' / delay ' + delay + 'ms';
     }
 }
 

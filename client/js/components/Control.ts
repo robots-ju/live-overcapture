@@ -48,9 +48,10 @@ export default class Control implements m.ClassComponent<ControlAttrs> {
                 const device = app.devices[key];
 
                 return m('li', [
-                    key + ' / Battery: ' + (device.state.battery || 'N/A'),
+                    key + ' / ' + device.description,
                 ]);
             })) : m('p', 'No devices available'),
+            m('h2', 'Cameras'),
             cameraKeys.length ? m('ul', cameraKeys.map(key => {
                 const camera = app.cameras[key];
 

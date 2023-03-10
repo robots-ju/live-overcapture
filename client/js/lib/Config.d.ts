@@ -22,7 +22,3 @@ export interface AppConfig {
 export interface AppState {
     debug: boolean
 }
-
-export interface DeviceState {
-    battery: number | null
-}

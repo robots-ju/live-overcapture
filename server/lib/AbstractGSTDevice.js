@@ -82,17 +82,4 @@ module.exports = class AbstractGSTDevice {
         this.gstProcess.kill('SIGINT');
         console.log('Child process exited');
     }
-
-    socketInfoPayload() {
-        return {
-            device: this.key,
-            state: this.socketInfo(),
-        };
-    }
-
-    socketInfo() {
-        return {
-            battery: 0,
-        };
-    }
 }

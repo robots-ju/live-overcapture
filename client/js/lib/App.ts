@@ -63,17 +63,6 @@ export default class App {
             this.pushState(data);
         });
 
-        this.socket.on('device', data => {
-            const device = this.devices[data.device];
-
-            if (!device) {
-                console.warn('Received state data for invalid device ' + data.device);
-                return;
-            }
-
-            device.pushState(data.state);
-        });
-
         this.socket.on('camera-target', data => {
             const camera = this.cameras[data.camera];
 
