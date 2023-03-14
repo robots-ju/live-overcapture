@@ -10,6 +10,7 @@ interface CameraOrientationTarget {
 }
 
 const SPEED_DEGREES_PER_SECOND = 50;
+const ZOOM_DEGREES_PER_SECOND = 15;
 
 export default class Camera {
     key: string
@@ -57,9 +58,6 @@ export default class Camera {
     setTarget(target: CameraOrientationTarget) {
         this.targetOrientation = target;
 
-        // TODO: animate zoom
-        this.currentOrientation.fov = this.targetOrientation.to.fov;
-
         if (target.jump) {
             this.currentOrientation = target.to;
             this.currentPanSpeed = 0;
@@ -93,6 +91,15 @@ export default class Camera {
 
                 this.currentOrientation.yaw = (((this.currentOrientation.yaw + Math.cos(direction) * distanceWeCanTravel) - 180) % 360) + 180;
                 this.currentOrientation.pitch = Math.max(Math.min(this.currentOrientation.pitch + Math.sin(direction) * distanceWeCanTravel, 90), -90);
+            }
+
+            const zoomDiff = Math.abs(this.targetOrientation.to.fov - this.currentOrientation.fov);
+            const distanceWeCanZoom = elapsed / 1000 * ZOOM_DEGREES_PER_SECOND;
+
+            if (zoomDiff < distanceWeCanZoom) {
+                this.currentOrientation.fov = this.targetOrientation.to.fov;
+            } else {
+                this.currentOrientation.fov += (this.targetOrientation.to.fov > this.currentOrientation.fov ? 1 : -1) * distanceWeCanZoom;
             }
         }
 
