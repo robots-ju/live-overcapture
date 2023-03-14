@@ -12,13 +12,15 @@ interface Camera3DControlAttrs {
 
 const CANVAS_WIDTH = 500;
 const DEGREES_PER_PIXEL_MOVED = 0.1;
-const FOV_ZOOM_PER_STEP = 0.005;
+const FOV_ZOOM_PER_STEP = 0.02;
 
 export default class Camera3DControl implements m.ClassComponent<Camera3DControlAttrs> {
     mouseMoveCallback!: (event: MouseEvent) => void
     mouseUpCallback!: () => void
     wheelCallback!: (event: WheelEvent) => void
-    dragActive: { x: number, y: number, orientation: CameraOrientation } | null
+    dragActive: { x: number, y: number, orientation: CameraOrientation } | null = null
+    standaloneWheelStartFov: number | null = null
+    standaloneWheelTimeout: number = -1
     scene: ThreeScene
     zoomLevel: number = 0
 
@@ -39,9 +41,44 @@ export default class Camera3DControl implements m.ClassComponent<Camera3DControl
                 this.dragActive = {
                     x: event.clientX,
                     y: event.clientY,
-                    orientation: camera.currentOrientation,
+                    orientation: {
+                        // Create deep copy
+                        ...camera.currentOrientation,
+                    },
                 };
                 this.zoomLevel = 0;
+                this.standaloneWheelStartFov = null;
+            },
+            onwheel: (event: WheelEvent) => {
+                // @ts-ignore
+                event.redraw = false;
+
+                // Let the global listeners below do the job if a drag is in progress
+                if (this.dragActive) {
+                    return;
+                }
+
+                event.preventDefault();
+
+                if (this.standaloneWheelStartFov === null) {
+                    this.standaloneWheelStartFov = camera.currentOrientation.fov;
+                    this.zoomLevel = 0;
+                }
+
+                // When using the scroll wheel without an active drag, zoom in place
+                // We need a way to set and reset the zoom level, otherwise we can't read all the values sent by onwheel event
+                clearTimeout(this.standaloneWheelTimeout);
+                this.standaloneWheelTimeout = setTimeout(() => {
+                    this.standaloneWheelStartFov = null;
+                }, 2000) as any;
+
+                this.zoomLevel += event.deltaY;
+
+                vnode.attrs.app.sendCameraTarget(camera.key, {
+                    pitch: camera.targetOrientation.to.pitch,
+                    yaw: camera.targetOrientation.to.yaw,
+                    fov: Math.max(Math.min(this.standaloneWheelStartFov + (this.zoomLevel * FOV_ZOOM_PER_STEP), camera.maxFov), camera.minFov),
+                });
             },
         }, m(SceneContainer, {
             camera,
