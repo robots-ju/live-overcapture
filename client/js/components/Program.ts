@@ -17,7 +17,14 @@ export default class Program implements m.ClassComponent<ProgramAttrs> {
     view(vnode: m.VnodeDOM<ProgramAttrs, this>) {
         const {app} = vnode.attrs;
 
-        const cameraKeys = m.route.param('camera').split('+');
+        const heights = [];
+        const cameraKeys = m.route.param('camera').split('+').map(key => {
+            const parts = key.split('(');
+
+            heights.push(parts.length > 1 ? parseInt(parts[1].replace(')', '')) : null);
+
+            return parts[0];
+        });
 
         const cameras = [];
 
@@ -34,6 +41,7 @@ export default class Program implements m.ClassComponent<ProgramAttrs> {
         return m(MultiSceneContainer, {
             app,
             cameras,
+            heights,
         });
     }
 }
