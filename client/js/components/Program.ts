@@ -1,6 +1,6 @@
 import * as m from 'mithril';
 import App from '../lib/App';
-import MultiSceneContainer from "./MultiSceneContainer";
+import MultiSceneContainer from './MultiSceneContainer';
 
 interface ProgramAttrs {
     app: App

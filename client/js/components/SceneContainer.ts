@@ -25,7 +25,7 @@ export default class SceneContainer implements m.ClassComponent<SceneContainerAt
         this.camera = new ThreeCamera(camera, width, height, vnode.attrs.scene);
     }
 
-    oncreate(vnode: m.VnodeDOM) {
+    oncreate(vnode: m.VnodeDOM<SceneContainerAttrs, this>) {
         this.camera.mount(vnode.dom as HTMLElement);
     }
 
