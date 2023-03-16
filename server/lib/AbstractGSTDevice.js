@@ -36,7 +36,7 @@ module.exports = class AbstractGSTDevice {
 
     pipeline() {
         return this.pipelineCrop() + ' ! tee name=low ! ' + this.pipelineQueue() + ' ' + this.pipelineToPipe(this.pipeOriginal) +
-            ' low. ! ' + this.pipelineQueue() + ' ! videoscale ! video/x-raw,width=' + Math.round(this.width / 2) + ',height=' + Math.round(this.height / 2) + this.pipelineToPipe(this.pipeLow);
+            ' low. ! ' + this.pipelineQueue() + ' ! videoscale ! video/x-raw,width=' + Math.round(this.width / 2) + ',height=' + Math.round((this.height - this.cropTop - this.cropBottom) / 2) + this.pipelineToPipe(this.pipeLow);
     }
 
     /**
