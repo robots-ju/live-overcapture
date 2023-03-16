@@ -21,6 +21,10 @@ The [Theta UVC fork](https://github.com/ricohapi/libuvc-theta) is required for r
 During my tests I had to customize the `LIBDIR` path to get things working consistently.
 `gstreamer1.0-libav` is required to use hardware decoding for h264.
 
+Some combination of the gstreamer bad plugins is also necessary to handle h264 at all.
+I'll try to update these instructions when I isolate which exact package is needed.
+In the meantime I just installed all the `libstreamer*` and `gstreamer*` packages available in the repo and it works.
+
 ```sh
 sudo apt install build-essential cmake git libusb-1.0-0-dev libjpeg-dev gstreamer1.0-libav
 git clone https://github.com/ricohapi/libuvc-theta.git
@@ -54,6 +58,21 @@ npm run build
 ### Server
 
 Edit `live-overcapture/server/config.json`.
+
+`pipe-prefix` must be a valid directory name in which the process will be able to create FIFO files.
+
+`raw-record-path` must be a valid directory in which to create recording files.
+Files will automatically be named with the device key and date.
+To disable recording, remove or rename the key.
+For performance reasons, only the raw 4K stream is recorded without any processing.
+This can use around 1GB per min of stream!
+
+Currently only one device with type `theta` is supported, and it will automatically pick the first camera available.
+
+`playback` devices are mostly meant for testing.
+The provided video will be played in a loop by GStreamer.
+
+For best performance, the video height after crop should be divisible by 2.
 
 ```sh
 cd live-overcapture/server

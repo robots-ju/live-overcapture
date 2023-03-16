@@ -149,9 +149,7 @@ main(int argc, char **argv)
         return -1;
     }
 
-    snprintf(pipe_proc, MAX_PIPELINE_LEN, "decodebin %s", argv[1]);
-
-    if (!gst_src_init(&argc, &argv, pipe_proc)) {
+    if (!gst_src_init(&argc, &argv, argv[1])) {
         return -1;
     }
 

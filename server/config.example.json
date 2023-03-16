@@ -36,6 +36,7 @@
                 "top": 200,
                 "bottom": 0
             },
+            "raw-record-path": "/home/ubuntu/Videos",
             "delay": 300,
             "cameras": [
                 {
