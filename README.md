@@ -7,8 +7,11 @@ Gstreamer is used to read and decode data streams from the cameras, create small
 NodeJS is used to send the individual JPEG frames created by Gstreamer over websocket on the network and provides the control server.
 An HTML5 webapp using Socket.io and THREE.js powers the control interface and program outputs.
 
-The server only supports Ricoh Theta cameras (tested with Theta V) over USB but could probably support many other sources.
+The server only supports Ricoh Theta cameras (tested with Theta V and Z1) over USB but could probably support many other sources.
 When the camera runs in 4K mode, each frame sent over the websocket is around 1MB in size, the maximum bandwidth required is about 30MB/s for each device*client.
+
+This project was only tested on Linux and Chrome.
+Firefox 3D and jpeg decoding is not performant enough to keep up.
 
 ## Installation
 
@@ -65,12 +68,13 @@ Edit `live-overcapture/server/config.json`.
 Files will automatically be named with the device key and date.
 To disable recording, remove or rename the key.
 For performance reasons, only the raw 4K stream is recorded without any processing.
-This can use around 1GB per min of stream!
+This can use around 1GB per minute of stream!
 
 Currently only one device with type `theta` is supported, and it will automatically pick the first camera available.
 
 `playback` devices are mostly meant for testing.
-The provided video will be played in a loop by GStreamer.
+The provided `uri` video absolute path will be played in a loop with GStreamer's `uridecodebin uri=`.
+The program checks that a file exists on the filesystem at that address before starting the server.
 
 For best performance, the video height after crop should be divisible by 2.
 
@@ -105,6 +109,9 @@ To ensure the proper sizing and no browser UI, launch Chrome from the command li
 ```
 
 `!` must be escaped, or it will be read as a hashbang!
+
+If the Chrome window is larger than the screen, you might need to move the window with the mouse to "un-constrain" it from the screen width.
+This happened every time on XUbuntu where the width given in parameter would be ignored (but not lost) until the window was made free-floating, then it would adopt the intended size.
 
 ## Miscellaneous
 
