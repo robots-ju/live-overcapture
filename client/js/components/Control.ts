@@ -2,6 +2,7 @@ import * as m from 'mithril';
 import App from '../lib/App';
 import CameraFlatControl from './CameraFlatControl';
 import Camera3DControl from './Camera3DControl';
+import CameraGyroControl from './CameraGyroControl';
 
 interface ControlAttrs {
     app: App
@@ -63,7 +64,11 @@ export default class Control implements m.ClassComponent<ControlAttrs> {
                             app.toggleCamera(key, !camera.enabled);
                         },
                     }),
-                    ' ' + key,
+                    ' ' + key + ' ',
+                    m(CameraGyroControl, {
+                        app,
+                        camera,
+                    }),
                 ]));
             })) : m('p', 'No devices available'),
             m('h2', 'Control'),
