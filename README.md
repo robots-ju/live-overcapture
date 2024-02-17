@@ -26,7 +26,7 @@ During my tests I had to customize the `LIBDIR` path to get things working consi
 
 Some combination of the gstreamer bad plugins is also necessary to handle h264 at all.
 I'll try to update these instructions when I isolate which exact package is needed.
-In the meantime I just installed all the `libstreamer*` and `gstreamer*` packages available in the repo and it works.
+In the meantime I just installed all the `libgstreamer*` and `gstreamer*` packages available in the repo and it works.
 
 ```sh
 sudo apt install build-essential cmake git libusb-1.0-0-dev libjpeg-dev gstreamer1.0-libav
@@ -90,6 +90,8 @@ Serve the `client-dist` (generated above with `build` command) folder using a we
 Access `http://<server ip>/#!/control` in a browser.
 
 If the client is served from a different host than the NodeJS server, the server IP can be specified with the `host` query string: `http://<ui ip>/?host=<server ip>#/control`.
+
+To use the gyro control method without HTTPS, you can add the IP:port to Chrome's insecure-as-secure flag <chrome://flags/#unsafely-treat-insecure-origin-as-secure>
 
 The program can be accessed at `http://<server ip>/#!/program/<camera key>`.
 
