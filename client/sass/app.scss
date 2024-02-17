@@ -30,14 +30,17 @@ h2, ul {
     left: 0;
     right: 0;
     background: rgba(0, 0, 0, 0.5);
-    color: white;
-    text-align: center;
-    font-size: 50px;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 256px; // Use multiple of 16px as recommended by Fontawesome for animations
+    justify-content: center;
+    align-items: center;
+    display: flex;
 
-    display: none;
+    opacity: 0;
+    transition: opacity 1s;
 
     &.is-dry {
-        display: block;
+        opacity: 1;
     }
 }
 

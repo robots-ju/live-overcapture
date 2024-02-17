@@ -16,7 +16,7 @@ export default class SceneContainer implements m.ClassComponent<SceneContainerAt
     view(vnode: m.VnodeDOM<SceneContainerAttrs, this>) {
         return m('.SceneContainer', m('.SceneDry', {
             className: vnode.attrs.camera.device.canvas.isDry ? 'is-dry' : '',
-        }, 'Waiting for data...'));
+        }, m('.SceneDryIcon', m('i.fas.fa-spinner.fa-pulse'))));
     }
 
     oninit(vnode: m.Vnode<SceneContainerAttrs, this>) {
