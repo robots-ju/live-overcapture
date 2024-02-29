@@ -72,7 +72,14 @@ export default class App {
                     data.target.jump = true;
                 }
 
+                const previousTargetIsAuto = camera.targetOrientation.to.fov === 'auto';
+
                 camera.setTarget(data.target);
+
+                // Trigger a redraw so the auto zoom control gets updated
+                if (previousTargetIsAuto !== (data.target.to.fov === 'auto')) {
+                    m.redraw();
+                }
             }
         });
 

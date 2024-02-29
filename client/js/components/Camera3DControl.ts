@@ -43,7 +43,7 @@ export default class Camera3DControl implements m.ClassComponent<Camera3DControl
                     y: event.clientY,
                     orientation: {
                         // Create deep copy
-                        ...camera.currentOrientation,
+                        ...camera.targetOrientation.to,
                     },
                 };
                 this.zoomLevel = 0;
@@ -95,7 +95,7 @@ export default class Camera3DControl implements m.ClassComponent<Camera3DControl
             vnode.attrs.app.sendCameraTarget(camera.key, {
                 pitch: Math.max(Math.min((this.dragActive.y - event.clientY) * DEGREES_PER_PIXEL_MOVED * -1 + this.dragActive.orientation.pitch, 90), -90),
                 yaw: ((this.dragActive.x - event.clientX) * DEGREES_PER_PIXEL_MOVED + this.dragActive.orientation.yaw + 180) % 360 - 180,
-                fov: Math.max(Math.min(this.dragActive.orientation.fov + (this.zoomLevel * FOV_ZOOM_PER_STEP), camera.maxFov), camera.minFov),
+                fov: this.zoomLevel === 0 ? this.dragActive.orientation.fov : Math.max(Math.min(this.dragActive.orientation.fov + (this.zoomLevel * FOV_ZOOM_PER_STEP), camera.maxFov), camera.minFov),
             });
         };
 

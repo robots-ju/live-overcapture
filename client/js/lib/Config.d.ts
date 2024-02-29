@@ -1,6 +1,12 @@
+export interface AutoFovStep {
+    pitch: number
+    fov: number
+}
+
 export interface CameraConfig {
     key: string
     ratio?: number
+    'auto-fov'?: AutoFovStep[]
 }
 
 export interface DeviceConfig {

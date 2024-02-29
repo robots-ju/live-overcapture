@@ -3,6 +3,7 @@ import App from '../lib/App';
 import CameraFlatControl from './CameraFlatControl';
 import Camera3DControl from './Camera3DControl';
 import CameraGyroControl from './CameraGyroControl';
+import AutoZoomControl from './AutoZoomControl';
 
 interface ControlAttrs {
     app: App
@@ -66,6 +67,10 @@ export default class Control implements m.ClassComponent<ControlAttrs> {
                     }),
                     ' ' + key + ' ',
                     m(CameraGyroControl, {
+                        app,
+                        camera,
+                    }),
+                    m(AutoZoomControl, {
                         app,
                         camera,
                     }),

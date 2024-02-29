@@ -45,9 +45,9 @@ export default class CameraGyroControl implements m.ClassComponent<CameraGyroCon
                 this.missingPermission = false;
 
                 Promise.all([
-                    navigator.permissions.query({name: 'accelerometer'}),
-                    navigator.permissions.query({name: 'magnetometer'}),
-                    navigator.permissions.query({name: 'gyroscope'}),
+                    navigator.permissions.query({name: 'accelerometer' as any}),
+                    navigator.permissions.query({name: 'magnetometer' as any}),
+                    navigator.permissions.query({name: 'gyroscope' as any}),
                 ]).then((results) => {
                     if (results.every((result) => result.state === 'granted')) {
                         this.gimbal.enable();
@@ -125,7 +125,7 @@ export default class CameraGyroControl implements m.ClassComponent<CameraGyroCon
             this.app.sendCameraTarget(this.camera.key, {
                 pitch,
                 yaw,
-                fov: (1 + (Math.min(Math.abs(pitch) / 200, 1))) * 50,
+                fov: this.camera.targetOrientation.to.fov,
             }, true);
         }
 

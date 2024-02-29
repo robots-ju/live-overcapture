@@ -16,7 +16,17 @@
                     "ratio": 1,
                     "pitch": 0,
                     "yaw": 0,
-                    "fov": 75
+                    "fov": 75,
+                    "auto-fov": [
+                        {
+                            "pitch": 0,
+                            "fov": 50
+                        },
+                        {
+                            "pitch": 80,
+                            "fov": 75
+                        }
+                    ]
                 },
                 {
                     "key": "b",

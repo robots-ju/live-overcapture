@@ -4,5 +4,9 @@
 export default interface CameraOrientation {
     pitch: number // -90 to 90. Positive is up
     yaw: number // -180 to 180. 0 is center of source image. Positive is to the right
-    fov: number // Vertical FOV value for the camera
+    fov: number | 'auto' // Vertical FOV value for the camera
+}
+
+export interface AbsoluteCameraOrientation extends CameraOrientation {
+    fov: number
 }

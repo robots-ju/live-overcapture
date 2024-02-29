@@ -1,7 +1,7 @@
 import * as m from 'mithril';
 import Camera from '../lib/Camera';
 import App from '../lib/App';
-import CameraOrientation from '../lib/CameraOrientation';
+import CameraOrientation, {AbsoluteCameraOrientation} from '../lib/CameraOrientation';
 
 interface CameraFlatControlAttrs {
     app: App
@@ -35,7 +35,7 @@ export default class CameraFlatControl implements m.ClassComponent<CameraFlatCon
         }
     }
 
-    drawTarget(orientation: CameraOrientation, color: string) {
+    drawTarget(orientation: AbsoluteCameraOrientation, color: string) {
         this.drawSingleTarget(orientation, color);
 
         // It's not a big performance impact to always draw the shape coming from the other direction,
@@ -53,7 +53,7 @@ export default class CameraFlatControl implements m.ClassComponent<CameraFlatCon
         }, color);
     }
 
-    drawSingleTarget(orientation: CameraOrientation, color: string) {
+    drawSingleTarget(orientation: AbsoluteCameraOrientation, color: string) {
         const x = ((orientation.yaw / 360) + 0.5) * this.width + this.yawOffsetPixels;
         const y = (0.5 - (orientation.pitch / 180)) * this.height;
 
@@ -87,7 +87,7 @@ export default class CameraFlatControl implements m.ClassComponent<CameraFlatCon
                 event.redraw = false;
                 this.mousePosition = {
                     ...this.mousePositionToCameraOrientation(event),
-                    fov: 75,
+                    fov: 75, // This value is overridden in the animation loop, but it's required by the interface
                 };
             },
             onmouseleave: (event: MouseEvent) => {
@@ -109,7 +109,7 @@ export default class CameraFlatControl implements m.ClassComponent<CameraFlatCon
                 vnode.attrs.app.sendCameraTarget(this.camera.key, {
                     pitch: position.pitch,
                     yaw: position.yaw,
-                    fov: this.targetFov === -1 ? this.camera.currentOrientation.fov : this.targetFov,
+                    fov: this.targetFov === -1 ? this.camera.targetOrientation.to.fov : this.targetFov,
                 }, event.ctrlKey);
             },
             width: this.width,
@@ -146,10 +146,10 @@ export default class CameraFlatControl implements m.ClassComponent<CameraFlatCon
         this.drawTarget(this.camera.currentOrientation, 'rgba(0,200,0,0.7)');
 
         if (this.mousePosition) {
-            this.drawTarget({
+            this.drawTarget(this.camera.convertToAbsoluteOrientation({
                 ...this.mousePosition,
-                fov: this.targetFov === -1 ? this.camera.currentOrientation.fov : this.targetFov,
-            }, 'rgba(255,255,255,0.7)');
+                fov: this.targetFov === -1 ? this.camera.targetOrientation.to.fov : this.targetFov,
+            }), 'rgba(255,255,255,0.7)');
         }
 
         requestAnimationFrame(this.animate.bind(this));
