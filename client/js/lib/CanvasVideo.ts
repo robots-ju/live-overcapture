@@ -56,6 +56,7 @@ export default class CanvasVideo implements CanvasVideoInterface {
     cropTop: number
     cropBottom: number
     delayMs: number
+    tracking: null | { x: number, y: number } = null
 
     constructor(width: number, height: number, cropTop: number, cropBottom: number, delayMs: number) {
         this.canvas = document.createElement('canvas');
@@ -82,6 +83,12 @@ export default class CanvasVideo implements CanvasVideoInterface {
 
             if (event.data.imageToDraw) {
                 this.drawImageOnContext(event.data.imageToDraw);
+
+                return;
+            }
+
+            if (event.data.tracking) {
+                this.tracking = {x: event.data.x, y: event.data.y};
 
                 return;
             }
@@ -283,6 +290,19 @@ export default class CanvasVideo implements CanvasVideoInterface {
 
     drawImageOnContext(image: HTMLImageElement | ImageBitmap) {
         this.context.drawImage(image, 0, this.cropTop, this.canvas.width, this.canvas.height - this.cropTop - this.cropBottom);
+
+        if (this.tracking) {
+            const TRACKING_ARROW_SIZE = 50;
+
+            this.context.strokeStyle = 'rgb(255 0 0 / 50%)';
+            this.context.lineWidth = 5;
+            this.context.beginPath();
+            this.context.moveTo(this.tracking.x - TRACKING_ARROW_SIZE, this.tracking.y);
+            this.context.lineTo(this.tracking.x + TRACKING_ARROW_SIZE, this.tracking.y);
+            this.context.moveTo(this.tracking.x, this.tracking.y - TRACKING_ARROW_SIZE);
+            this.context.lineTo(this.tracking.x, this.tracking.y + TRACKING_ARROW_SIZE);
+            this.context.stroke();
+        }
 
         this.textureUpdateListeners.forEach(callback => callback());
 

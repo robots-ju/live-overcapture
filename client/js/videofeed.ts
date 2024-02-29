@@ -46,6 +46,13 @@ onmessage = (event) => {
                 });
             }
 
+            socket.on('tracking', data => {
+                postMessage({
+                    tracking: true,
+                    ...data,
+                });
+            });
+
             return;
         case 'enable':
             if (!socket) {

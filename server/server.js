@@ -56,6 +56,8 @@ io.on('connection', function (socket) {
 
         if (data.quality === 'original') {
             device.pipeOriginal.addClient(socket);
+        } else if (data.quality === 'movement') {
+            device.pipeMovement.addClient(socket);
         } else {
             device.pipeLow.addClient(socket);
         }
@@ -71,6 +73,7 @@ io.on('connection', function (socket) {
         }
 
         device.pipeOriginal.removeClient(socket);
+        device.pipeMovement.removeClient(socket);
         device.pipeLow.removeClient(socket);
     });
 

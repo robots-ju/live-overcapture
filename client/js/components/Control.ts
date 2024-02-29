@@ -32,16 +32,19 @@ export default class Control implements m.ClassComponent<ControlAttrs> {
                         app.forceRefresh();
                     },
                 }, 'Force refresh all program windows'),
-                ' ',
-                m('label', [
-                    m('input', {
-                        type: 'checkbox',
-                        checked: app.quality === 'original',
-                        onchange: () => {
-                            app.changeQuality(app.quality === 'original' ? 'low' : 'original');
-                        },
-                    }),
-                    ' Preview in original quality',
+                ' Quality:',
+                ['low', 'movement', 'original'].map(quality => [
+                    ' ',
+                    m('label', [
+                        m('input', {
+                            type: 'radio',
+                            checked: app.quality === quality,
+                            onchange: () => {
+                                app.changeQuality(quality as any);
+                            },
+                        }),
+                        ' ' + quality,
+                    ]),
                 ]),
             ]),
             m('h2', 'Devices'),

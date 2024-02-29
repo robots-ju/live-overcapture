@@ -78,8 +78,10 @@ module.exports = class Pipe {
             return;
         }
 
-        const completeFrame = Buffer.concat(this.buffers);
+        this.sendCompleteFrame(time, Buffer.concat(this.buffers));
+    }
 
+    sendCompleteFrame(time, frame) {
         this.frameNumber++;
         this.framesInStatsInterval++;
 
@@ -88,7 +90,7 @@ module.exports = class Pipe {
                 number: this.frameNumber,
                 time,
                 // Passing binary inside a JSON block should be fine, Socket.io will automatically extract buffers to binary attachments
-                jpeg: completeFrame,
+                jpeg: frame,
             });
         });
 

@@ -1,5 +1,6 @@
 const Camera = require('./Camera');
 const Pipe = require('./Pipe');
+const MovementTrackerPipe = require('./MovementTrackerPipe');
 
 module.exports = class AbstractGSTDevice {
     constructor(config, pipePrefix) {
@@ -13,6 +14,7 @@ module.exports = class AbstractGSTDevice {
 
         this.pipeOriginal = new Pipe(pipePrefix + 'original');
         this.pipeLow = new Pipe(pipePrefix + 'low');
+        this.pipeMovement = new MovementTrackerPipe(pipePrefix + 'movement', config);
 
         this.gstProcess = null;
         this.restartProcessOnExit = true;
@@ -34,9 +36,14 @@ module.exports = class AbstractGSTDevice {
         return '';
     }
 
+    pipelineMovement() {
+        //return '';
+        return ' ! tee name=cleanlow ! ' + this.pipelineQueue() + ' ! videorate ! videoscale ! video/x-raw,width=' + Math.round(this.width / this.pipeMovement.scale) + ',height=' + Math.round((this.height - this.cropTop - this.cropBottom) / this.pipeMovement.scale) + ',framerate=5/1 ! videoconvert ! gaussianblur sigma=0.5 ! videoconvert ! segmentation test-mode=true learning-rate=0.002 method=2 ! videoconvert ' + this.pipelineToPipe(this.pipeMovement) + ' cleanlow.'
+    }
+
     pipeline() {
         return this.pipelineCrop() + ' ! tee name=low ! ' + this.pipelineQueue() + ' ' + this.pipelineToPipe(this.pipeOriginal) +
-            ' low. ! ' + this.pipelineQueue() + ' ! videoscale ! video/x-raw,width=' + Math.round(this.width / 2) + ',height=' + Math.round((this.height - this.cropTop - this.cropBottom) / 2) + this.pipelineToPipe(this.pipeLow);
+            ' low. ! ' + this.pipelineQueue() + ' ! videoscale ! video/x-raw,width=' + Math.round(this.width / 2) + ',height=' + Math.round((this.height - this.cropTop - this.cropBottom) / 2) + this.pipelineMovement() + this.pipelineToPipe(this.pipeLow);
     }
 
     /**

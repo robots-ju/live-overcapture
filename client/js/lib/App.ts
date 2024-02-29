@@ -10,7 +10,7 @@ export default class App {
     socket: Socket | null = null
     devices: { [key: string]: Device } = {}
     cameras: { [key: string]: Camera } = {}
-    quality: 'low' | 'original' = 'low'
+    quality: 'low' | 'original' | 'movement' = 'low'
     state: AppState = {
         debug: false
     }
@@ -95,7 +95,7 @@ export default class App {
         });
     }
 
-    changeQuality(quality: 'low' | 'original') {
+    changeQuality(quality: 'low' | 'original' | 'movement') {
         const oldQuality = this.quality;
         this.quality = quality;
 

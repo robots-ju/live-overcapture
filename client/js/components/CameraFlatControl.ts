@@ -11,7 +11,7 @@ interface CameraFlatControlAttrs {
 // Width of the 3D camera controls + other margins to keep while trying to make the canvas as wide as possible
 const KEEP_HORIZONTAL_SPACE = 700;
 const CANVAS_MIN_WIDTH = 500;
-const YAW_OFFSET = 90; // degrees
+const YAW_OFFSET = 0; // degrees
 
 export default class CameraFlatControl implements m.ClassComponent<CameraFlatControlAttrs> {
     app: App
