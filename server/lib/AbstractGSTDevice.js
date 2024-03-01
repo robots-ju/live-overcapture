@@ -8,6 +8,7 @@ module.exports = class AbstractGSTDevice {
         this.height = config.height;
         this.cropTop = config.crop?.top || 0;
         this.cropBottom = config.crop?.bottom || 0;
+        this.quality = config.quality || -1;
 
         this.cameras = config.cameras.map(cameraConfig => new Camera(cameraConfig));
 
@@ -22,8 +23,9 @@ module.exports = class AbstractGSTDevice {
         return 'queue leaky=downstream max-size-time=500000000';
     }
 
-    pipelineToPipe(pipe) {
-        return ' ! jpegenc ! ' + this.pipelineQueue() + ' ! filesink location="' + pipe.path + '"';
+    pipelineToPipe(pipe, higherQuality = false) {
+        // Allow customizing the jpeg quality, but never raise the low quality stream above the default of 85
+        return ' ! jpegenc' + ((this.quality > -1 && (higherQuality || this.quality < 85)) ? ' quality=' + this.quality : '') + ' ! ' + this.pipelineQueue() + ' ! filesink location="' + pipe.path + '"';
     }
 
     pipelineCrop() {
@@ -35,7 +37,7 @@ module.exports = class AbstractGSTDevice {
     }
 
     pipeline() {
-        return this.pipelineCrop() + ' ! tee name=low ! ' + this.pipelineQueue() + ' ' + this.pipelineToPipe(this.pipeOriginal) +
+        return this.pipelineCrop() + ' ! tee name=low ! ' + this.pipelineQueue() + ' ' + this.pipelineToPipe(this.pipeOriginal, true) +
             ' low. ! ' + this.pipelineQueue() + ' ! videoscale ! video/x-raw,width=' + Math.round(this.width / 2) + ',height=' + Math.round((this.height - this.cropTop - this.cropBottom) / 2) + this.pipelineToPipe(this.pipeLow);
     }
 

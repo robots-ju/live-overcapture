@@ -9,6 +9,7 @@
             "type": "playback",
             "width": 3840,
             "height": 1920,
+            "quality": 95,
             "uri": "file:///home/ubuntu/Videos/360video.mp4",
             "cameras": [
                 {
