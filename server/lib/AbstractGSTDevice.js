@@ -37,7 +37,8 @@ module.exports = class AbstractGSTDevice {
     }
 
     pipeline() {
-        return this.pipelineCrop() + ' ! tee name=low ! ' + this.pipelineQueue() + ' ' + this.pipelineToPipe(this.pipeOriginal, true) +
+        // The first CAPS in the original quality branch would not seem necessary but on some devices the low quality scale CAPS can apparently move up the pipeline and completely mess with both quality outputs
+        return this.pipelineCrop() + ' ! tee name=low ! ' + this.pipelineQueue() + ' ! video/x-raw,width=' + this.width + ',height=' + (this.height - this.cropTop - this.cropBottom) + this.pipelineToPipe(this.pipeOriginal, true) +
             ' low. ! ' + this.pipelineQueue() + ' ! videoscale ! video/x-raw,width=' + Math.round(this.width / 2) + ',height=' + Math.round((this.height - this.cropTop - this.cropBottom) / 2) + this.pipelineToPipe(this.pipeLow);
     }
 
