@@ -53,7 +53,7 @@ make
 ```sh
 cd live-overcapture
 npm i
-npm run build
+npm run production
 ```
 
 ## Run
