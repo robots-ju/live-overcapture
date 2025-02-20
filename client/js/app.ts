@@ -2,6 +2,7 @@ import * as m from 'mithril';
 import App from './lib/App';
 import Control from './components/Control';
 import Program from './components/Program';
+import Equirectangular from './components/Equirectangular';
 
 let uri: string = m.parseQueryString(window.location.search).host as string || window.location.hostname;
 if (!/:[0-9+]$/.test(uri)) {
@@ -27,6 +28,13 @@ m.route(document.getElementById('app'), '/control', {
     '/program/:camera': {
         view() {
             return m(Program, {
+                app,
+            });
+        },
+    },
+    '/equirectangular/:device': {
+        view() {
+            return m(Equirectangular, {
                 app,
             });
         },
